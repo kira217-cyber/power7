@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0F0238" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="POWER7" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Asap:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>POWER7 - এশিয়ার সেরা কেসিনো এবং স্পোটস প্লার্টফম</title>
+    <meta name="description" content="POWER7 - এশিয়ার সেরা কেসিনো এবং স্পোটস প্লার্টফম এখানে খেলো আয় জয় লাভ করো ।" />
+    <!-- লিংক শেয়ার করলে (Facebook, Telegram, WhatsApp …) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="POWER7" />
+    <meta property="og:url" content="https://power7.live/" />
+    <meta property="og:title" content="POWER7 - এশিয়ার সেরা কেসিনো এবং স্পোটস প্লার্টফম" />
+    <meta property="og:description" content="POWER7 - এশিয়ার সেরা কেসিনো এবং স্পোটস প্লার্টফম এখানে খেলো আয় জয় লাভ করো ।" />
+    <meta property="og:image" content="https://power7.live/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="POWER7 - এশিয়ার সেরা কেসিনো এবং স্পোটস প্লার্টফম" />
+    <meta name="twitter:description" content="POWER7 - এশিয়ার সেরা কেসিনো এবং স্পোটস প্লার্টফম এখানে খেলো আয় জয় লাভ করো ।" />
+    <meta name="twitter:image" content="https://power7.live/og-image.jpg" />
+    <!-- সাইট লোডার — মূল সাইটের `.br_loader_root` এর মতো এটা React
+         চালু হওয়ার **আগেই** পেইন্ট হয়, তাই প্রথম মুহূর্ত থেকেই দেখা যায়।
+         ডেটা এসে গেলে RootLayout এটাকে সরিয়ে দেয়। -->
+    <style>
+      #tb-boot {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.8);
+      }
+      #tb-boot.tb-boot--gone {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      #tb-boot .tb-spinner {
+        width: 60px;
+        height: 60px;
+        overflow: hidden;
+      }
+      #tb-boot .tb-spinner__inner {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      #tb-boot .tb-spinner__line {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-top: 2.4px solid transparent;
+        border-left: 2.4px solid #ffd800;
+        border-radius: 50%;
+      }
+      #tb-boot .tb-spinner__line:nth-child(1) {
+        transform: rotate(120deg) rotateX(66deg) rotate(0deg);
+        animation: tb-spin-1 1s linear infinite;
+      }
+      #tb-boot .tb-spinner__line:nth-child(2) {
+        transform: rotate(240deg) rotateX(66deg) rotate(0deg);
+        animation: tb-spin-2 1s linear infinite;
+      }
+      #tb-boot .tb-spinner__line:nth-child(3) {
+        transform: rotate(1turn) rotateX(66deg) rotate(0deg);
+        animation: tb-spin-3 1s linear infinite;
+      }
+      @keyframes tb-spin-1 { to { transform: rotate(120deg) rotateX(66deg) rotate(1turn); } }
+      @keyframes tb-spin-2 { to { transform: rotate(240deg) rotateX(66deg) rotate(1turn); } }
+      @keyframes tb-spin-3 { to { transform: rotate(1turn) rotateX(66deg) rotate(1turn); } }
+    </style>
+  </head>
+  <body style="background: #010928">
+    <div id="root"></div>
+    <div id="tb-boot">
+      <span class="tb-spinner"
+        ><span class="tb-spinner__inner"
+          ><span class="tb-spinner__line"></span><span class="tb-spinner__line"></span
+          ><span class="tb-spinner__line"></span></span
+      ></span>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

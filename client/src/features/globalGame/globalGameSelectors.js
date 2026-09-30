@@ -1,0 +1,11 @@
+export const selectSections = (state) => state.globalGame.sections;
+export const selectVendors = (state) => state.globalGame.vendors;
+export const selectHotGames = (state) => state.globalGame.hotGames;
+export const selectGamesByType = (state) => state.globalGame.gamesByType;
+export const selectGlobalGameLoading = (state) => state.globalGame.loading;
+export const selectGlobalGameLoaded = (state) => state.globalGame.loaded;
+export const selectGameSource = (state) => state.globalGame.source;
+export const selectGameTotals = (state) => state.globalGame.totals;
+export const selectGameTabs = (state) => state.globalGame.tabs;
+export const selectGameCategories = (state) => state.globalGame.categories;
+export const selectMobileSections = (state) => state.globalGame.mobileSections;

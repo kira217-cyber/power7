@@ -1,0 +1,350 @@
+{
+ "acmc_icon-icon_referral.png": {
+  "selector": ".acmc_icon.icon_referral",
+  "bytes": 1223
+ },
+ "acmc_icon-icon_missionleaderboard.png": {
+  "selector": ".acmc_icon.icon_missionLeaderboard",
+  "bytes": 1301
+ },
+ "announce-popup-container-popup-title.png": {
+  "selector": ".announce-popup-container .popup-title:before",
+  "bytes": 1045
+ },
+ "announce-popup-container-popup-main-content-nav-li-icon_notice.png": {
+  "selector": ".announce-popup-container .popup-main .content-nav li .icon_notice",
+  "bytes": 299
+ },
+ "announce-popup-container-content-detail.png": {
+  "selector": ".announce-popup-container .content-detail:before",
+  "bytes": 3774
+ },
+ "br_help_wrap-top-title.png": {
+  "selector": ".br_help_wrap .top-title:before",
+  "bytes": 1045
+ },
+ "br_help_wrap-mchelp-wrap-help-icon.png": {
+  "selector": ".br_help_wrap .mcHelp-wrap .help-icon",
+  "bytes": 299
+ },
+ "br_help_wrap-mchelp-wrap-mchelp-menu-title.png": {
+  "selector": ".br_help_wrap .mcHelp-wrap .mcHelp-menu .title:after",
+  "bytes": 2388
+ },
+ "br_help_wrap-mchelp-wrap-mchelp-menu-title-active.png": {
+  "selector": ".br_help_wrap .mcHelp-wrap .mcHelp-menu .title.active:after",
+  "bytes": 2388
+ },
+ "footer-container-social-info-channel-item-fb.png": {
+  "selector": ".footer-container .social-info .channel-item.fb",
+  "bytes": 631
+ },
+ "footer-container-social-info-channel-item-yt.png": {
+  "selector": ".footer-container .social-info .channel-item.yt",
+  "bytes": 310
+ },
+ "side-wrapper-switch-icon.png": {
+  "selector": ".side-wrapper .switch-icon",
+  "bytes": 486
+ },
+ "side-wrapper-nav-wrapper-classify-list-classify-list-item-game-classify-icon-arc.png": {
+  "selector": ".side-wrapper .nav-wrapper .classify-list .classify-list-item .game-classify-icon.arc",
+  "bytes": 2599
+ },
+ "side-wrapper-nav-wrapper-classify-list-classify-list-item-game-classify-icon-jp.png": {
+  "selector": ".side-wrapper .nav-wrapper .classify-list .classify-list-item .game-classify-icon.jp",
+  "bytes": 1681
+ },
+ "side-wrapper-nav-wrapper-classify-list-classify-list-item-game-classify-icon-fish.png": {
+  "selector": ".side-wrapper .nav-wrapper .classify-list .classify-list-item .game-classify-icon.fish",
+  "bytes": 3173
+ },
+ "side-menu-channel-group-channel-list-channel-item-fb.png": {
+  "selector": ".side-menu .channel-group .channel-list .channel-item.fb",
+  "bytes": 631
+ },
+ "side-menu-channel-group-channel-list-channel-item-yt.png": {
+  "selector": ".side-menu .channel-group .channel-list .channel-item.yt",
+  "bytes": 310
+ },
+ "agent-center-container-content-left-acmc_icon-agentteamoverview.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.agentTeamOverview",
+  "bytes": 345
+ },
+ "agent-center-container-content-left-acmc_icon-agentannouncement.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.agentAnnouncement",
+  "bytes": 399
+ },
+ "agent-center-container-content-left-acmc_icon-depositv2.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.depositv2",
+  "bytes": 484
+ },
+ "agent-center-container-content-left-acmc_icon-withdraw.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.withdraw",
+  "bytes": 390
+ },
+ "agent-center-container-content-left-acmc_icon-transactionhistory.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.transactionHistory",
+  "bytes": 514
+ },
+ "agent-center-container-content-left-acmc_icon-registercenter.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.registerCenter",
+  "bytes": 487
+ },
+ "agent-center-container-content-left-acmc_icon-downlinemanagmentview.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.downlineManagmentView",
+  "bytes": 538
+ },
+ "agent-center-container-content-left-acmc_icon-agentredrain.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.agentRedRain",
+  "bytes": 338
+ },
+ "agent-center-container-content-left-acmc_icon-palstatementsagentcopy.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.palStatementsAgentCopy",
+  "bytes": 405
+ },
+ "agent-center-container-content-left-acmc_icon-personalhistorycopy.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.personalHistoryCopy",
+  "bytes": 509
+ },
+ "agent-center-container-content-left-acmc_icon-agentrevenuereport.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.agentRevenueReport",
+  "bytes": 369
+ },
+ "agent-center-container-content-left-acmc_icon-agentdividendrecordcopy2.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.agentDividendRecordCopy2",
+  "bytes": 240
+ },
+ "agent-center-container-content-left-acmc_icon-securitycenter.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.securityCenter",
+  "bytes": 559
+ },
+ "agent-center-container-content-left-acmc_icon-messagev2.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.messageV2",
+  "bytes": 351
+ },
+ "agent-center-container-content-left-acmc_icon-service.png": {
+  "selector": ".agent-center-container .content-left .acmc_icon.service",
+  "bytes": 606
+ },
+ "notice-marquee-container-notice-main-notice-icon-speaker-data-v-4d555467.png": {
+  "selector": ".notice-marquee-container .notice-main .notice-icon .speaker[data-v-4d555467]",
+  "bytes": 749
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item:after",
+  "bytes": 1229
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-active.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item.active:after",
+  "bytes": 1853
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-hot.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.HOT",
+  "bytes": 3050
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-fav.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.FAV",
+  "bytes": 2918
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-fish.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.FISH",
+  "bytes": 1941
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-live.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.LIVE",
+  "bytes": 2465
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-rng.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.RNG",
+  "bytes": 2827
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-sports.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.SPORTS",
+  "bytes": 2058
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-esports.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.ESPORTS",
+  "bytes": 2703
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-pvp.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.PVP",
+  "bytes": 5996
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-cockfight.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.COCKFIGHT",
+  "bytes": 4690
+ },
+ "game-menu-container-game-menu-swiper-swiper-slide-game-menu-item-menu-icon-mxwin.png": {
+  "selector": ".game-menu-container .game-menu-swiper .swiper-slide .game-menu-item .menu-icon.MXWIN",
+  "bytes": 2460
+ },
+ "home-item-main-title-title-label-recent-icon.png": {
+  "selector": ".home-item .main-title .title-label.recent-icon:before",
+  "bytes": 5540
+ },
+ "home-item-main-title-title-label-hot-icon.png": {
+  "selector": ".home-item .main-title .title-label.hot-icon:before",
+  "bytes": 3050
+ },
+ "home-item-main-title-title-label-fav-icon.png": {
+  "selector": ".home-item .main-title .title-label.fav-icon:before",
+  "bytes": 2918
+ },
+ "home-item-main-title-title-label-rng-icon.png": {
+  "selector": ".home-item .main-title .title-label.rng-icon:before",
+  "bytes": 2827
+ },
+ "home-item-main-title-title-label-fish-icon.png": {
+  "selector": ".home-item .main-title .title-label.fish-icon:before",
+  "bytes": 1941
+ },
+ "home-item-main-title-title-label-live-icon.png": {
+  "selector": ".home-item .main-title .title-label.live-icon:before",
+  "bytes": 2465
+ },
+ "home-item-main-title-title-label-sports-icon.png": {
+  "selector": ".home-item .main-title .title-label.sports-icon:before",
+  "bytes": 2058
+ },
+ "home-item-main-title-title-label-pvp-icon.png": {
+  "selector": ".home-item .main-title .title-label.pvp-icon:before",
+  "bytes": 5996
+ },
+ "home-item-main-title-title-label-mxwin-icon.png": {
+  "selector": ".home-item .main-title .title-label.mxwin-icon:before",
+  "bytes": 2460
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-arc.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-arc",
+  "bytes": 2599
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-3reels.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-3reels",
+  "bytes": 1993
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-5reels.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-5reels",
+  "bytes": 1685
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-ac.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-ac",
+  "bytes": 2599
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-bg.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-bg",
+  "bytes": 2204
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-freespins.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-freespins",
+  "bytes": 2098
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-jp.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-jp",
+  "bytes": 1681
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-bgs.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-bgs",
+  "bytes": 1877
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-megaway.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-megaway",
+  "bytes": 2249
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-sm.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-sm",
+  "bytes": 2296
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-bj.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-bj",
+  "bytes": 2018
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-dat.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-dat",
+  "bytes": 1973
+ },
+ "home-item-classify-list-classify-item-classify-icon-classify-fish.png": {
+  "selector": ".home-item .classify-list .classify-item .classify-icon.classify-fish",
+  "bytes": 3173
+ },
+ "font-face.svg": {
+  "selector": "@font-face",
+  "bytes": 2587
+ },
+ "close_btn.png": {
+  "selector": ".close_btn",
+  "bytes": 301
+ },
+ "br_acmc_mlnav-acmc_icon.png": {
+  "selector": ".br_acmc_mlnav .acmc_icon",
+  "bytes": 7280
+ },
+ "apply-reward-apply-reward-wrap-apply-reward-title-span-data-v-c52d0d34.png": {
+  "selector": ".apply-reward .apply-reward-wrap .apply-reward-title span[data-v-c52d0d34]:first-of-type",
+  "bytes": 3781
+ },
+ "chatroom-close-btn.svg": {
+  "selector": "#chatRoom .close-btn",
+  "bytes": 366
+ },
+ "open_chat_btn.png": {
+  "selector": ".open_chat_btn",
+  "bytes": 1925
+ },
+ "br_index_modal-contract-br_imodal_main-br_imodal_content-br_imodal_cmain-br_imodal_cmbody-br_imodal_pbody-br_imodal_typereq-br_imodal_trmain-br_imodal_tname-agreement-icon_agreement.png": {
+  "selector": ".br_index_modal.contract .br_imodal_main .br_imodal_content .br_imodal_cmain .br_imodal_cmbody .br_imodal_pbody .br_imodal_typereq .br_imodal_trmain .br_imodal_tname .agreement .icon_agreement",
+  "bytes": 1696
+ },
+ "br_index_modal-contract-br_imodal_main-br_imodal_content-br_imodal_cmain-br_imodal_cmbody-br_imodal_pbody-br_imodal_typereq-br_imodal_trmain-br_imodal_tname-agreement-icon_agreement-2.png": {
+  "selector": ".br_index_modal.contract .br_imodal_main .br_imodal_content .br_imodal_cmain .br_imodal_cmbody .br_imodal_pbody .br_imodal_typereq .br_imodal_trmain .br_imodal_tname .agreement .icon_agreement:hover",
+  "bytes": 792
+ },
+ "geetest_status-success_area-icon-data-v-1d021a7c.png": {
+  "selector": ".geetest_status .success_area .icon[data-v-1d021a7c]",
+  "bytes": 2654
+ },
+ "geetest_status-error_area-icon-data-v-1d021a7c.png": {
+  "selector": ".geetest_status .error_area .icon[data-v-1d021a7c]",
+  "bytes": 1724
+ },
+ "modal_mask-modal_container-get_prize_button.png": {
+  "selector": ".modal_mask .modal_container .get_prize_button",
+  "bytes": 5178
+ },
+ "point-mall-br_integral_nref.png": {
+  "selector": ".point-mall .br_integral_nref",
+  "bytes": 511
+ },
+ "point-mall-br_integral_mbtlist-account.png": {
+  "selector": ".point-mall .br_integral_mbtlist.account",
+  "bytes": 527
+ },
+ "point-mall-br_integral_mbtlist-integral.png": {
+  "selector": ".point-mall .br_integral_mbtlist.integral",
+  "bytes": 713
+ },
+ "point-mall-br_integral_mbtlist-balance.png": {
+  "selector": ".point-mall .br_integral_mbtlist.balance",
+  "bytes": 478
+ },
+ "point-mall-br_integral_mbtlist-refresh.png": {
+  "selector": ".point-mall .br_integral_mbtlist.refresh",
+  "bytes": 525
+ },
+ "point-mall-br_insearch_csvalue-span.png": {
+  "selector": ".point-mall .br_insearch_csvalue span",
+  "bytes": 361
+ },
+ "sm-content-prev-data-v-4d1a5508.png": {
+  "selector": ".sm-content .prev[data-v-4d1a5508]",
+  "bytes": 1393
+ },
+ "sm-content-next-data-v-4d1a5508.png": {
+  "selector": ".sm-content .next[data-v-4d1a5508]",
+  "bytes": 1411
+ },
+ "br_bg_adorn-data-v-1500822e.png": {
+  "selector": ".br_bg_adorn[data-v-1500822e]",
+  "bytes": 6382
+ }
+}

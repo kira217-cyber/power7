@@ -1,0 +1,415 @@
+@import "tailwindcss";
+
+/* ────────────────────────────────────────────────────────────────
+   POWER7 Admin — ডিজাইন টোকেন
+
+   লেআউট ও কম্পোনেন্ট BetChokkor এর অ্যাডমিনের মতোই, কিন্তু **রঙ ও
+   ফন্ট POWER7 এর ক্লায়েন্ট সাইট থেকে** (`client/src/index.css`):
+
+     পেজের বেস   #010928 (গাঢ় নেভি)
+     সাইডবার      #0F0238
+     কার্ড/সারফেস  #241A3E
+     অ্যাকসেন্ট    #AD00FF → #BC43F4 (বেগুনি)
+     সোনালি        #FBD029
+     ফন্ট          Asap
+
+   টোকেনের নাম BetChokkor এর মতোই (neutral ও primary), তাই বাকি
+   কম্পোনেন্টগুলো অপরিবর্তিত — শুধু মানগুলো POWER7 এর।
+   ব্যাকঅফিসে পড়ার সুবিধার জন্য টাইপোগ্রাফি ফিক্সড px।
+   ──────────────────────────────────────────────────────────────── */
+
+:root {
+  /* neutral — নেভি-বেগুনি সিঁড়ি */
+  --neutral100: #ffffff;
+  --neutral200: #eaeaf4;
+  --neutral300: #c7cbe0;
+  --neutral400: #97a5c9; /* client --text-muted */
+  --neutral500: #808994; /* client --text-faint */
+  --neutral600: #4a3c74;
+  --neutral700: #3a2c60;
+  --neutral800: #2e2250;
+  --neutral900: #241a3e; /* client --surface */
+  --neutral1000: #010928; /* client --bg */
+
+  /* brand — সোনালি (client --gold) */
+  --primary300: #fff0b0;
+  --primary400: #fcdc63;
+  --primary500: #fbd029;
+  --primary600: #e0ae00;
+
+  /* অ্যাকসেন্ট বেগুনি — ক্লায়েন্টের নামেই, যাতে ওখান থেকে কিছু
+     আনলে হুবহু বসে */
+  --accent: #ad00ff;
+  --accent-bright: #bc43f4;
+  --accent-soft: rgb(188 67 244 / 0.28);
+  --gold: var(--primary500);
+  --surface: var(--neutral900);
+  --sidebar-bg: #0f0238; /* client --header-bg */
+
+  --status-danger: #ff777c;
+  --status-info: #409fff;
+  --status-pending: #d8a845;
+  --status-success: #38ba9d;
+
+  --text-primary: var(--neutral200);
+  --text-secondary: var(--neutral300);
+  --text-muted: var(--neutral400);
+  --text-disabled: var(--neutral500);
+
+  --sidebar-width: 260px;
+  --topbar-height: 64px;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--neutral1000);
+  color: var(--text-primary);
+  /* ক্লায়েন্ট সাইটের ফন্ট */
+  font-family: Asap, "Helvetica Neue", Helvetica, Tahoma, "Nirmala UI",
+    "Noto Sans Bengali", sans-serif;
+}
+
+/* ── শেয়ার্ড ব্লক ──
+   লগইন পেজের চেহারাই পুরো প্যানেলে: কাচের কার্ড, সোনালি বর্ডার,
+   গ্রেডিয়েন্ট বোতাম। এক জায়গায় বদলালে সব পেজে বদলায়। */
+
+.ad-card {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--primary500), transparent 80%);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+  /* ভিতরের চওড়া জিনিস (যেমন চার্ট) যেন কার্ড ছাড়িয়ে পেজ চওড়া না করে —
+     নিজের scroll container হয়ে ভিতরেই স্ক্রল করে */
+  overflow: hidden;
+}
+
+/*
+ * চওড়া টেবিলের মোড়ক।
+ *
+ * `.ad-card` এর `overflow: hidden` টেইলউইন্ডের `overflow-x-auto` কে
+ * হারিয়ে দিত — কলামগুলো কেটে যেত, কিন্তু পাশে স্ক্রল করা যেত না। তাই
+ * আলাদা ক্লাস, আর সেটা `.ad-card` এর পরে লেখা যাতে এটাই জেতে।
+ */
+.ad-table-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* গ্রেডিয়েন্ট শিরোনাম — লগইন পেজের "Admin" লেখার মতো */
+.ad-title {
+  background-image: linear-gradient(
+    to right,
+    var(--primary300),
+    var(--primary500) 50%,
+    var(--primary600)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 900;
+}
+
+.ad-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ইনপুটের খোলস — ভিতরে আইকন আর ইনপুট বসে */
+.ad-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ad-field:focus-within {
+  border-color: color-mix(in srgb, var(--primary500), transparent 40%);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--primary500), transparent 80%);
+}
+
+/* একক ইনপুট — খোলস ছাড়া ব্যবহার করার জন্য একই চেহারা */
+.ad-input {
+  width: 100%;
+  height: 46px;
+  padding-inline: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ad-input::placeholder {
+  color: var(--text-disabled);
+}
+
+.ad-input:focus-visible {
+  border-color: color-mix(in srgb, var(--primary500), transparent 40%);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--primary500), transparent 80%);
+}
+
+.ad-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding-inline: 20px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+}
+
+.ad-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ad-btn--primary {
+  background: linear-gradient(
+    to right,
+    var(--primary400),
+    var(--primary500) 50%,
+    var(--primary600)
+  );
+  color: var(--neutral1000);
+  font-weight: 900;
+  box-shadow: 0 18px 40px rgba(249, 185, 1, 0.22);
+}
+
+/* বোতামের উপর দিয়ে আলো চলে যাওয়া */
+.ad-btn--primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+
+.ad-btn--primary:not(:disabled):hover {
+  transform: scale(1.01);
+}
+
+.ad-btn--primary:not(:disabled):hover::after {
+  transform: translateX(100%);
+}
+
+.ad-btn--ghost {
+  border: 1px solid color-mix(in srgb, var(--primary500), transparent 70%);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--neutral200);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.ad-btn--ghost:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.ad-btn--danger {
+  background: var(--status-danger);
+  color: var(--neutral1000);
+}
+
+.ad-btn--danger:not(:disabled):hover {
+  filter: brightness(1.06);
+}
+
+.ad-btn--sm {
+  height: 38px;
+  padding-inline: 16px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+/* ── পেজের পেছনের সোনালি আভা ──
+   লগইন পেজের মতো, কিন্তু পুরো প্যানেলের পেছনে একবার বসে */
+.ad-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(249, 185, 1, 0.14),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(227, 134, 20, 0.12),
+      transparent 38%
+    );
+}
+
+/* ── স্ক্রলবার ── */
+/* ফায়ারফক্সে ::-webkit-scrollbar কাজ করে না, তাই ওর নিজের দুটো
+   প্রপার্টিও দেওয়া — নইলে ওখানে মোটা ডিফল্ট স্ক্রলবার বসত */
+.ad-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral700) transparent;
+}
+
+.ad-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ad-scroll::-webkit-scrollbar-thumb {
+  background: var(--neutral700);
+  border-radius: 20px;
+}
+
+.ad-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   লগইন পেজ
+   ──────────────────────────────────────────────────────────────── */
+
+/* ঘূর্ণায়মান রঙিন বর্ডার। @property না থাকলে (পুরোনো ব্রাউজার)
+   অ্যানিমেশন থেমে থাকে কিন্তু বর্ডারটা তবু দেখা যায়। */
+@property --rgb-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.rgb-frame {
+  background: conic-gradient(
+    from var(--rgb-angle),
+    #ff2d55,
+    #ff9500,
+    #ffd60a,
+    #34c759,
+    #0a84ff,
+    #bf5af2,
+    #ff2d55
+  );
+  animation: rgb-spin 4s linear infinite;
+}
+
+.rgb-glow {
+  filter: blur(9px);
+  opacity: 0.75;
+}
+
+@keyframes rgb-spin {
+  to {
+    --rgb-angle: 360deg;
+  }
+}
+
+/* কার্ড ওঠার অ্যানিমেশন — framer-motion ছাড়াই, বাড়তি ডিপেন্ডেন্সি
+   এড়াতে (ডিপ্লয় হালকা রাখতে) */
+.login-rise {
+  animation: login-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* বোতামের উপর দিয়ে আলো চলে যাওয়া */
+.login-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transition: transform 0.7s ease;
+}
+
+.login-shine:hover::after {
+  transform: translateX(100%);
+}
+
+.login-copy {
+  margin-inline-start: auto;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: var(--primary500);
+  color: var(--neutral1000);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.login-copy:hover {
+  background: var(--primary400);
+}
+
+/* যারা মোশন কমিয়ে রাখেন তাদের জন্য */
+@media (prefers-reduced-motion: reduce) {
+  .rgb-frame,
+  .login-rise {
+    animation: none;
+  }
+
+  .login-shine::after,
+  .ad-btn--primary::after {
+    transition: none;
+  }
+}
+
+/* ── লাইভ প্রিভিউ (থিম স্টুডিও, Site Identity, Footer) ──
+   iframe এ আসল সাইট প্রতি ফ্রেমে নড়ে (ব্যানার, gif)। কার্ডের blur আর
+   পাতার বাকি অংশ যেন তার সাথে বারবার নতুন করে না আঁকে — কার্ড নিরেট,
+   iframe নিজের আলাদা GPU স্তরে, আঁকা বাক্সের ভিতরেই আটকানো। */
+.ad-card--preview {
+  background: color-mix(in srgb, var(--neutral1000), white 6%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.ad-preview-frame {
+  contain: strict;
+  isolation: isolate;
+  transform: translateZ(0);
+}
