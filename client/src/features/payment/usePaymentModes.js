@@ -37,6 +37,8 @@ export const autoWithdrawRow = (row) => ({
   methodId: String(row.paymentMethod || "").toUpperCase(),
   walletSnapshot: { methodName: row.methodName, walletNumber: row.accountNumber },
   adminNote: row.status === "REJECTED" ? row.reason : "",
+  // সফল হলে OraclePay এর এজেন্টের ট্রানজেকশন আইডি — খেলোয়াড় নিজের ওয়ালেটে মেলাতে পারেন
+  trxId: row.status === "COMPLETED" ? row.transactionId || "" : "",
   approvedAt: row.completedAt,
 });
 

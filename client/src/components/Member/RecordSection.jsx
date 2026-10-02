@@ -298,7 +298,7 @@ const Desktop = ({ tab }) => {
                   `${nameOf(r.walletSnapshot?.methodName) || r.methodId} ${r.walletSnapshot?.walletNumber ? `· ${maskNumber(r.walletSnapshot.walletNumber)}` : ""}`,
                   fmtTime(r.createdAt),
                   statusText(r.status),
-                  r.adminNote || "—",
+                  r.adminNote || (r.trxId ? `TrxID ${r.trxId}` : "—"),
                 ],
               })),
               totals: [t.member.desk.total, "", fmt(reqRows.reduce((sum, r) => sum + Number(r.amount || 0), 0), decimal), "", "", "", ""],
@@ -880,7 +880,10 @@ const MobileRows = ({ kind, acc, requests, pl, turn }) => {
                 ...(row.calc?.totalBonus > 0 ? [[r.bonus, `+৳ ${fmt(row.calc.totalBonus)}`]] : []),
                 ...(row.fields?.trxId ? [["TrxID", row.fields.trxId]] : []),
               ]
-            : [[t.depositFlow.method, `${row.walletSnapshot?.methodName?.bn || row.methodId} · 0${row.walletSnapshot?.walletNumber || ""}`]]),
+            : [
+                [t.depositFlow.method, `${row.walletSnapshot?.methodName?.bn || row.methodId} · 0${row.walletSnapshot?.walletNumber || ""}`],
+                ...(row.trxId ? [["TrxID", row.trxId]] : []),
+              ]),
           ...(row.status === "rejected" && row.adminNote ? [[r.reason, row.adminNote]] : []),
         ],
         badge(row.status),

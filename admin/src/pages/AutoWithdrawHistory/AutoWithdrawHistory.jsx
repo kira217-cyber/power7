@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import {
   Banknote,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   CircleCheck,
@@ -11,6 +12,8 @@ import {
   Hourglass,
   Phone,
   Receipt,
+  Send,
+  TriangleAlert,
   RefreshCw,
   Search,
   User,
@@ -38,6 +41,9 @@ const STATUS = {
   PENDING: { color: "var(--status-pending)", Icon: Clock },
   REJECTED: { color: "var(--status-danger)", Icon: XCircle },
 };
+
+/** টেবিলে যে নাম দেখায় — OraclePay এর COMPLETED = সফল */
+const LABEL = { PENDING: "PENDING", PROCESSING: "PROCESSING", COMPLETED: "SUCCESS", REJECTED: "REJECTED" };
 
 const tone = (status) =>
   STATUS[String(status || "PENDING").toUpperCase()] || STATUS.PENDING;
@@ -92,13 +98,12 @@ const SummaryCard = ({ title, amount, count, color, icon }) => (
 );
 
 /**
- * অটো উইথড্রয়ের ইতিহাস — Bajiman এর ইতিহাস পাতার গড়নে, রঙ আমাদের
- * সাইটের (গোল্ড/ডার্ক)।
+ * অটো উইথড্রয়ের ইতিহাস — Bajiman এর ইতিহাস পাতার গড়নে।
  *
- * গেটওয়ে নিজেই টাকা পাঠায়; PENDING/PROCESSING মানে এখনো চলছে, COMPLETED
- * এ প্রমাণ ছবি থাকে, REJECTED এ টাকা খেলোয়াড়ের কাছে ফেরত গেছে। কোনো
- * উইথড্র ঝুলে থাকলে অ্যাডমিন হাতে বাতিল করে টাকা ফেরত দিতে পারে — তখন
- * ব্রাউজারের ডিফল্ট নয়, নিজেদের নিশ্চিতকরণ মডাল আসে।
+ * খেলোয়াড়ের আবেদন PENDING এ আসে (টাকা আটকে রাখা, OraclePay তে নয়)।
+ * admin Approve চাপলে তবেই OraclePay তে যায় (PROCESSING); OraclePay এর
+ * webhook এ SUCCESS (Trx ID, প্রমাণ লেখা ও ছবি) বা REJECTED (টাকা ফেরত)।
+ * Reject শুধু PENDING এ — OraclePay তে যাওয়ার পর বাতিল সে-ই করে।
  */
 const AutoWithdrawHistory = () => {
   const [loading, setLoading] = useState(true);
@@ -115,6 +120,7 @@ const AutoWithdrawHistory = () => {
 
   const [zoom, setZoom] = useState("");
   const [confirmRow, setConfirmRow] = useState(null);
+  const [approveRow, setApproveRow] = useState(null);
   const [acting, setActing] = useState(false);
 
   const fetchData = async () => {
@@ -173,6 +179,25 @@ const AutoWithdrawHistory = () => {
     }
   };
 
+  const doApprove = async () => {
+    if (!approveRow) return;
+
+    try {
+      setActing(true);
+      const { data } = await api.post(
+        `/api/auto-withdraw/withdrawals/${approveRow._id}/approve`,
+      );
+      toast.success(data?.message || "Sent to OraclePay");
+      setApproveRow(null);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Approve failed");
+      setApproveRow(null);
+    } finally {
+      setActing(false);
+      await fetchData();
+    }
+  };
+
   const totalPages = Math.max(Number(meta.totalPages || 1), 1);
 
   const headerStats = useMemo(
@@ -200,7 +225,7 @@ const AutoWithdrawHistory = () => {
                 Auto Withdraw History
               </h1>
               <p className="mt-1 text-[13px] font-medium text-[var(--text-muted)]">
-                Payouts through the gateway — fee, proof and refund records.
+                Approve a pending request to send it to OraclePay — then it settles as success or rejected.
               </p>
             </div>
           </div>
@@ -220,7 +245,7 @@ const AutoWithdrawHistory = () => {
       {/* ── সারাংশ ── */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
-          title="Completed"
+          title="Success"
           amount={summary.completedAmount}
           count={summary.COMPLETED}
           color="var(--status-success)"
@@ -280,7 +305,7 @@ const AutoWithdrawHistory = () => {
               <option value="ALL">All status</option>
               <option value="PENDING">Pending</option>
               <option value="PROCESSING">Processing</option>
-              <option value="COMPLETED">Completed</option>
+              <option value="COMPLETED">Success</option>
               <option value="REJECTED">Rejected</option>
             </select>
           </div>
@@ -365,7 +390,9 @@ const AutoWithdrawHistory = () => {
               {rows.map((row) => {
                 const isOpen = expanded === row._id;
                 const st = tone(row.status);
-                const canReject = ["PENDING", "PROCESSING"].includes(row.status);
+                const pendingNew = row.status === "PENDING" && !row.withdrawalId && !row.approvedAt;
+                const canApprove = row.status === "PENDING";
+                const canReject = pendingNew;
 
                 return (
                   <React.Fragment key={row._id}>
@@ -400,6 +427,11 @@ const AutoWithdrawHistory = () => {
                       </td>
 
                       <td className="px-5 py-4">
+                        {row.transactionId ? (
+                          <div className="mb-1 font-mono text-[12px] font-bold text-[var(--neutral100)]">
+                            {row.transactionId}
+                          </div>
+                        ) : null}
                         {row.proofImages?.length ? (
                           <div className="flex gap-1">
                             {row.proofImages.slice(0, 3).map((url) => (
@@ -417,7 +449,7 @@ const AutoWithdrawHistory = () => {
                               </button>
                             ))}
                           </div>
-                        ) : (
+                        ) : row.transactionId ? null : (
                           <span className="text-[12px] text-[var(--text-disabled)]">
                             —
                           </span>
@@ -433,12 +465,38 @@ const AutoWithdrawHistory = () => {
                           }}
                         >
                           <st.Icon size={11} />
-                          {String(row.status || "PENDING").toUpperCase()}
+                          {LABEL[String(row.status || "PENDING").toUpperCase()] || row.status}
                         </span>
+                        {row.status === "PENDING" && row.gatewayError ? (
+                          <div
+                            className="mt-1.5 flex max-w-[220px] items-start gap-1 text-[11px] font-semibold text-[var(--status-danger)]"
+                            title={row.gatewayError}
+                          >
+                            <TriangleAlert size={12} className="mt-0.5 shrink-0" />
+                            <span className="line-clamp-2">{row.gatewayError}</span>
+                          </div>
+                        ) : null}
+                        {row.status === "PROCESSING" ? (
+                          <div className="mt-1.5 text-[11px] font-semibold text-[var(--text-muted)]">
+                            Waiting for OraclePay
+                          </div>
+                        ) : null}
                       </td>
 
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-2">
+                          {canApprove ? (
+                            <button
+                              type="button"
+                              onClick={() => setApproveRow(row)}
+                              className="ad-btn ad-btn--primary ad-btn--sm"
+                              title="Approve & send to OraclePay"
+                            >
+                              <Send size={13} />
+                              Approve
+                            </button>
+                          ) : null}
+
                           {canReject ? (
                             <button
                               type="button"
@@ -507,7 +565,22 @@ const AutoWithdrawHistory = () => {
                                 v={row.refunded ? "YES" : "NO"}
                               />
                               <FieldRow
-                                k="Completed At"
+                                k="Transaction ID"
+                                v={row.transactionId || "—"}
+                              />
+                              {row.proofText && row.proofText !== row.transactionId ? (
+                                <FieldRow k="Proof Text" v={row.proofText} />
+                              ) : null}
+                              <FieldRow
+                                k="Approved At"
+                                v={
+                                  row.approvedAt
+                                    ? new Date(row.approvedAt).toLocaleString()
+                                    : "—"
+                                }
+                              />
+                              <FieldRow
+                                k="Success At"
                                 v={
                                   row.completedAt
                                     ? new Date(row.completedAt).toLocaleString()
@@ -516,6 +589,9 @@ const AutoWithdrawHistory = () => {
                               />
                               {row.reason ? (
                                 <FieldRow k="Reason" v={row.reason} />
+                              ) : null}
+                              {row.status === "PENDING" && row.gatewayError ? (
+                                <FieldRow k="Gateway Error" v={row.gatewayError} />
                               ) : null}
                             </div>
 
@@ -620,6 +696,24 @@ const AutoWithdrawHistory = () => {
       )}
 
       <ImageLightbox src={zoom} alt="proof" onClose={() => setZoom("")} />
+
+      <ConfirmModal
+        open={Boolean(approveRow)}
+        busy={acting}
+        title="Approve this withdrawal?"
+        message={
+          approveRow
+            ? `${money(approveRow.amount)} will be sent through OraclePay to ${
+                approveRow.paymentMethod || ""
+              } ${approveRow.accountNumber || ""} (${
+                approveRow.user?.userId || approveRow.userIdText || "the player"
+              }). After this only OraclePay can complete or reject it.`
+            : ""
+        }
+        confirmText="Approve & send"
+        onConfirm={doApprove}
+        onClose={() => !acting && setApproveRow(null)}
+      />
 
       <ConfirmModal
         open={Boolean(confirmRow)}

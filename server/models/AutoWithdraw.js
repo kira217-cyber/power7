@@ -5,11 +5,13 @@ const { Schema } = mongoose;
 /**
  * অটো উইথড্রয়ালের একটা লেনদেন (OraclePay Auto Withdrawal API)।
  *
- * আবেদন জমা হওয়ার সাথে সাথেই খেলোয়াড়ের ব্যালেন্স থেকে টাকা কেটে
- * রাখা হয় (ম্যানুয়ালের মতোই), তারপর গেটওয়েতে পাঠানো হয়। গেটওয়ে
- * তিন ধাপে webhook দেয়: PROCESSING → COMPLETED (প্রমাণ ছবিসহ) বা
- * REJECTED (তখন টাকা ফেরত)। `refunded` আলাদা রাখা — একই REJECTED
- * webhook দুবার এলেও টাকা যেন একবারই ফেরে।
+ * ধাপ:
+ *   PENDING    — খেলোয়াড় আবেদন করেছেন; ব্যালেন্স থেকে টাকা আটকে রাখা,
+ *                গেটওয়েতে এখনো কিছু যায়নি। admin Approve বা Reject করেন।
+ *   PROCESSING — admin Approve করেছেন, OraclePay তে পাঠানো হয়েছে।
+ *   COMPLETED  — OraclePay পাঠিয়ে দিয়েছে (Trx ID, প্রমাণ লেখা ও ছবি সহ)।
+ *   REJECTED   — admin বা OraclePay বাতিল করেছে; টাকা ফেরত।
+ * `refunded` আলাদা রাখা — একই REJECTED দুবার এলেও টাকা যেন একবারই ফেরে।
  */
 const autoWithdrawSchema = new Schema(
   {
@@ -45,8 +47,18 @@ const autoWithdrawSchema = new Schema(
       index: true,
     },
 
-    /** সফল হলে ক্যাশ-আউটের প্রমাণ ছবি */
+    /** সফল হলে OraclePay এর প্রমাণ — এজেন্টের Trx ID, লেখা আর স্ক্রিনশট */
+    transactionId: { type: String, default: "", trim: true },
+    proofText: { type: String, default: "", trim: true },
     proofImages: { type: [String], default: [] },
+
+    /** admin এর অনুমোদন — তখনই গেটওয়েতে যায় */
+    approvedBy: { type: Schema.Types.ObjectId, ref: "Admin", default: null },
+    approvedAt: { type: Date, default: null },
+    /** গেটওয়েতে পাঠানো চলছে — একই আবেদন দুবার যেন না যায় */
+    sendingAt: { type: Date, default: null },
+    /** শেষবার পাঠাতে গিয়ে গেটওয়ের ভুল (আবেদন তখনো PENDING থাকে) */
+    gatewayError: { type: String, default: "", trim: true },
 
     reason: { type: String, default: "", trim: true },
 
@@ -68,7 +80,7 @@ const autoWithdrawSchema = new Schema(
      * OraclePay webhook এ কোনো সই পাঠায় না — তাই ঠিকানাটাই প্রমাণ: চাবিটা
      * শুধু আমরা আর গেটওয়ে জানে, বাইরের কেউ নকল "COMPLETED" পাঠাতে পারে না।
      */
-    callbackKey: { type: String, default: "", select: false },
+    callbackKey: { type: String, default: "", select: false, index: true },
 
     /** কোন বাঁধা ই-ওয়ালেট থেকে — ম্যানুয়াল উত্তোলনের একই ওয়ালেট */
     wallet: { type: Schema.Types.ObjectId, ref: "EWallet", default: null },

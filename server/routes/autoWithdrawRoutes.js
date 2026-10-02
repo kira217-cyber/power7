@@ -22,8 +22,11 @@ import { lockWithdraw, unlockWithdraw } from "../utils/withdrawLock.js";
 /**
  * অটো উইথড্র (OraclePay) — `/api/auto-withdraw`।
  *
- * BetChokkor এর মতোই: আবেদনের সাথে সাথে ব্যালেন্স কাটা, গেটওয়েতে পাঠানো,
- * গেটওয়ে PROCESSING → COMPLETED (প্রমাণ ছবি) বা REJECTED (টাকা ফেরত) জানায়।
+ * ধাপ (models/AutoWithdraw.js):
+ *   খেলোয়াড়ের আবেদন → PENDING (ব্যালেন্স থেকে টাকা আটকে রাখা, গেটওয়েতে নয়)
+ *   admin Approve → OraclePay তে পাঠানো → PROCESSING
+ *   OraclePay webhook → COMPLETED (Trx ID, প্রমাণ লেখা ও ছবি) বা REJECTED (টাকা ফেরত)
+ *   admin Reject (শুধু PENDING এ) → টাকা ফেরত
  *
  * POWER7 এ যা আলাদা:
  *   - নম্বর হাতে লেখা নয় — ম্যানুয়াল উত্তোলনের **একই বাঁধা ই-ওয়ালেট**
@@ -79,6 +82,17 @@ export const autoWithdrawStatus = async () => {
       : [],
   };
 };
+
+/** গেটওয়ের প্রমাণ ছবি — শুধু http(s), আর OraclePay র http লিংক https এ (https পাতায় mixed content নয়) */
+const cleanProofImages = (list) =>
+  (Array.isArray(list) ? list : [])
+    .map((url) => text(url))
+    .filter((url) => /^https?:\/\//i.test(url))
+    .map((url) => url.replace(/^http:\/\/((?:[\w-]+\.)*oraclepay\.org)\//i, "https://$1/"))
+    .slice(0, 10);
+
+/** গেটওয়েতে পাঠানো হয়েছে কিনা — পাঠানোর পর admin আর বাতিল করতে পারেন না */
+const wasSent = (record) => Boolean(record?.withdrawalId || record?.approvedAt);
 
 /** টাকা ফেরত — `refunded: false` শর্তে এক ধাপে দখল, তাই দুবার ফেরত যায় না */
 const refundWithdraw = async (filter, patch = {}, by = null) => {
@@ -201,45 +215,13 @@ router.post("/create", protectUser, async (req, res) => {
       { type: "withdraw", amount: -amount, refType: "AutoWithdraw", refId: record._id, note: `Auto ${method.name?.en || code} ${walletNumber}` },
     ]);
 
-    const server = text(process.env.PUBLIC_SERVER_URL).replace(/\/+$/, "");
-    try {
-      const data = await gatewayPost(gatewayUrl(), setting.businessToken, {
-        amount,
-        payment_method: code,
-        user_identity_address: walletNumber,
-        account_number: walletNumber,
-        callback_url: `${server}/api/auto-withdraw/webhook/${callbackKey}`,
-        checkout_items: [{ userId: user.userId }, { withdrawal_type: "user" }],
-      });
-
-      if (!data?.success || !data?.data?.withdrawal_id) throw new Error(data?.message || "Gateway did not accept the request");
-
-      const info = data.data;
-      await AutoWithdraw.updateOne(
-        { _id: record._id },
-        {
-          $set: {
-            withdrawalId: text(info.withdrawal_id),
-            feePercentage: num(info.fee_percentage),
-            feeAmount: money(info.fee_amount),
-            deductedAmount: money(info.deducted_amount),
-          },
-        },
-      );
-
-      if (setting.lastError) {
-        setting.lastError = "";
-        await setting.save();
-      }
-
-      return successResponse(res, "Auto withdraw submitted", { id: record._id, amount, balance: money(user.balance), status: "PENDING" }, 201);
-    } catch (gatewayError) {
-      // গেটওয়ে না নিলে টাকা ফেরত ও আবেদন বাতিল
-      await refundWithdraw({ _id: record._id }, { reason: String(gatewayError.message || "Gateway error").slice(0, 300) });
-      setting.lastError = String(gatewayError.message || "").slice(0, 300);
-      await setting.save();
-      return errorResponse(res, "Could not reach the payment gateway", 502, "gateway");
-    }
+    // গেটওয়েতে এখন নয় — admin অনুমোদন দিলে তবেই (POST /withdrawals/:id/approve)
+    return successResponse(
+      res,
+      "Auto withdraw submitted — waiting for approval",
+      { id: record._id, amount, balance: money(user.balance), status: "PENDING" },
+      201,
+    );
   } catch (error) {
     return errorResponse(res, error.message, 500);
   } finally {
@@ -348,61 +330,171 @@ router.get("/withdrawals/admin", protectAdmin, requirePermission("auto-withdraw-
 });
 
 /**
- * গেটওয়ের webhook — `callback_url` এ বসানো চাবি সহ।
- * PROCESSING → COMPLETED (proof_images সহ) বা REJECTED (টাকা ফেরত)।
+ * admin অনুমোদন — তখনই OraclePay তে পাঠানো, আবেদন PROCESSING।
+ *
+ * `sendingAt` এক ধাপে দখল করে পাঠানো হয়, তাই দুজন admin একসাথে চাপলেও
+ * আবেদন একবারই যায়। গেটওয়ে না নিলে আবেদন PENDING ই থাকে, ভুলটা
+ * `gatewayError` এ — admin আবার Approve বা Reject করতে পারেন।
  */
-router.post("/webhook/:key", async (req, res) => {
+router.post("/withdrawals/:id/approve", protectAdmin, requireWrite, requirePermission("auto-withdraw-history"), async (req, res) => {
   try {
-    const withdrawalId = text(req.body?.withdrawal_id);
-    const status = text(req.body?.status).toUpperCase();
-    if (!withdrawalId) return errorResponse(res, "withdrawal_id is required", 400);
+    if (!isId(req.params.id)) return errorResponse(res, "Bad id", 400);
 
-    const existing = await AutoWithdraw.findOne({ withdrawalId }).select("+callbackKey");
-    if (!existing || !sameKey(existing.callbackKey, req.params.key)) return errorResponse(res, "Unknown withdrawal", 404);
+    const setting = await AutoWithdrawSetting.current();
+    if (!setting.businessToken) return errorResponse(res, "Set the OraclePay business token in Auto Withdraw first", 400);
 
-    if (status === "PROCESSING") {
-      await AutoWithdraw.updateOne({ _id: existing._id, status: "PENDING" }, { $set: { status: "PROCESSING" } });
-      return successResponse(res, "Processing recorded");
+    // আগের নিয়মে আগেই গেটওয়েতে যাওয়া আবেদন — আবার পাঠানো নয়, শুধু PROCESSING
+    const old = await AutoWithdraw.findOneAndUpdate(
+      { _id: req.params.id, status: "PENDING", withdrawalId: { $ne: "" } },
+      { $set: { status: "PROCESSING", approvedBy: req.admin._id, approvedAt: new Date() } },
+      { returnDocument: "after" },
+    );
+    if (old) return successResponse(res, "Already at the gateway — marked processing", { withdrawal: old });
+
+    const staleSend = new Date(Date.now() - 2 * 60 * 1000);
+    const record = await AutoWithdraw.findOneAndUpdate(
+      { _id: req.params.id, status: "PENDING", refunded: false, $or: [{ sendingAt: null }, { sendingAt: { $lt: staleSend } }] },
+      { $set: { sendingAt: new Date() } },
+      { returnDocument: "after" },
+    ).select("+callbackKey");
+    if (!record) return errorResponse(res, "Only a pending withdrawal can be approved", 400);
+
+    // পুরোনো আবেদনে চাবি না থাকলে এখন বানানো
+    let callbackKey = record.callbackKey;
+    if (!callbackKey) {
+      callbackKey = crypto.randomBytes(24).toString("hex");
+      await AutoWithdraw.updateOne({ _id: record._id }, { $set: { callbackKey } });
     }
 
-    if (status === "COMPLETED") {
-      const proofImages = Array.isArray(req.body?.proof_images)
-        ? req.body.proof_images.map((url) => text(url)).filter((url) => /^https?:\/\//i.test(url)).slice(0, 10)
-        : [];
-      await AutoWithdraw.updateOne(
-        { _id: existing._id, status: { $in: ["PENDING", "PROCESSING"] } },
-        { $set: { status: "COMPLETED", proofImages, completedAt: new Date() } },
+    const server = text(process.env.PUBLIC_SERVER_URL).replace(/\/+$/, "");
+    try {
+      const data = await gatewayPost(gatewayUrl(), setting.businessToken, {
+        amount: money(record.amount),
+        payment_method: record.paymentMethod,
+        user_identity_address: record.userIdentityAddress,
+        account_number: record.accountNumber,
+        callback_url: `${server}/api/auto-withdraw/webhook/${callbackKey}`,
+        checkout_items: [{ userId: record.userIdText }, { withdrawal_type: "user" }],
+      });
+
+      if (!data?.success || !data?.data?.withdrawal_id) throw new Error(data?.message || "Gateway did not accept the request");
+
+      const info = data.data;
+      const updated = await AutoWithdraw.findOneAndUpdate(
+        { _id: record._id },
+        {
+          $set: {
+            status: "PROCESSING",
+            withdrawalId: text(info.withdrawal_id),
+            feePercentage: num(info.fee_percentage),
+            feeAmount: money(info.fee_amount),
+            deductedAmount: money(info.deducted_amount),
+            approvedBy: req.admin._id,
+            approvedAt: new Date(),
+            sendingAt: null,
+            gatewayError: "",
+          },
+        },
+        { returnDocument: "after" },
       );
-      return successResponse(res, "Completed recorded");
-    }
 
-    if (status === "REJECTED") {
-      // শেষ হয়ে যাওয়া উত্তোলন আর ফেরত যায় না
-      await refundWithdraw(
-        { _id: existing._id, status: { $in: ["PENDING", "PROCESSING"] } },
-        { reason: text(req.body?.reason).slice(0, 300) || "Rejected by gateway" },
-      );
-      return successResponse(res, "Rejected and refunded");
+      if (setting.lastError) {
+        setting.lastError = "";
+        await setting.save();
+      }
+      return successResponse(res, "Sent to OraclePay — now processing", { withdrawal: updated });
+    } catch (gatewayError) {
+      const timedOut = /timeout|aborted/i.test(`${gatewayError?.name || ""} ${gatewayError?.message || ""}`);
+      const message = timedOut
+        ? "No answer from OraclePay in time — check the OraclePay dashboard before approving again"
+        : String(gatewayError?.message || "Gateway error").slice(0, 300);
+      await AutoWithdraw.updateOne({ _id: record._id }, { $set: { sendingAt: null, gatewayError: message } });
+      setting.lastError = message;
+      await setting.save();
+      return errorResponse(res, `OraclePay did not accept it: ${message}`, 502, "gateway");
     }
-
-    return errorResponse(res, "Unknown status", 400);
   } catch (error) {
     return errorResponse(res, error.message, 500);
   }
 });
 
-/** গেটওয়ে থেকে চূড়ান্ত খবর না এলে admin হাতে বাতিল করে টাকা ফেরত দেন */
+/**
+ * admin বাতিল — শুধু গেটওয়েতে না যাওয়া (PENDING) আবেদন; টাকা ফেরত।
+ * গেটওয়েতে যাওয়ার পর বাতিল OraclePay ই করে (REJECTED webhook), নইলে
+ * সে টাকা পাঠিয়ে দিলে খেলোয়াড় দুবার পেতেন।
+ */
 router.post("/withdrawals/:id/reject", protectAdmin, requireWrite, requirePermission("auto-withdraw-history"), async (req, res) => {
   try {
     if (!isId(req.params.id)) return errorResponse(res, "Bad id", 400);
     const note = text(req.body?.note).slice(0, 300);
     const refunded = await refundWithdraw(
-      { _id: req.params.id, status: { $in: ["PENDING", "PROCESSING"] } },
+      { _id: req.params.id, status: "PENDING", withdrawalId: "", approvedAt: null, sendingAt: null },
       { reason: note || "Rejected by administrator", reviewedBy: req.admin._id, reviewNote: note },
       req.admin._id,
     );
-    if (!refunded) return errorResponse(res, "Only a waiting withdrawal can be rejected", 400);
+    if (!refunded) {
+      return errorResponse(res, "Only a pending withdrawal that is not sent to OraclePay can be rejected", 400);
+    }
     return successResponse(res, "Withdrawal rejected and refunded");
+  } catch (error) {
+    return errorResponse(res, error.message, 500);
+  }
+});
+
+/**
+ * OraclePay webhook — `callback_url` এ বসানো এই আবেদনের গোপন চাবি দিয়ে খোঁজা।
+ *   PROCESSING — এজেন্ট নিয়েছে (আমাদের দিকে আগেই PROCESSING)
+ *   COMPLETED  — transaction_id, proof_text, proof_images, date_and_time
+ *   REJECTED   — reason, টাকা ফেরত
+ */
+router.post("/webhook/:key", async (req, res) => {
+  try {
+    const key = text(req.params.key);
+    const status = text(req.body?.status).toUpperCase();
+    const withdrawalId = text(req.body?.withdrawal_id);
+    if (!/^[a-f0-9]{48}$/.test(key)) return errorResponse(res, "Unknown withdrawal", 404);
+
+    const existing = await AutoWithdraw.findOne({ callbackKey: key }).select("+callbackKey");
+    if (!existing || !sameKey(existing.callbackKey, key)) return errorResponse(res, "Unknown withdrawal", 404);
+    if (withdrawalId && existing.withdrawalId && withdrawalId !== existing.withdrawalId) {
+      return errorResponse(res, "withdrawal_id does not match", 400);
+    }
+    if (!wasSent(existing) && !existing.sendingAt) return errorResponse(res, "This withdrawal was not sent to the gateway", 409);
+
+    const open = { _id: existing._id, status: { $in: ["PENDING", "PROCESSING"] } };
+    const idPatch = !existing.withdrawalId && withdrawalId ? { withdrawalId } : {};
+
+    if (status === "PROCESSING") {
+      await AutoWithdraw.updateOne(open, { $set: { status: "PROCESSING", ...idPatch } });
+      return successResponse(res, "Processing recorded");
+    }
+
+    if (status === "COMPLETED") {
+      const when = new Date(text(req.body?.date_and_time));
+      await AutoWithdraw.updateOne(open, {
+        $set: {
+          status: "COMPLETED",
+          transactionId: text(req.body?.transaction_id).slice(0, 120),
+          proofText: text(req.body?.proof_text).slice(0, 500),
+          proofImages: cleanProofImages(req.body?.proof_images),
+          completedAt: Number.isNaN(when.getTime()) ? new Date() : when,
+          sendingAt: null,
+          ...idPatch,
+        },
+      });
+      return successResponse(res, "Completed recorded");
+    }
+
+    if (status === "REJECTED") {
+      await refundWithdraw(open, {
+        reason: text(req.body?.reason).slice(0, 300) || "Rejected by OraclePay",
+        sendingAt: null,
+        ...idPatch,
+      });
+      return successResponse(res, "Rejected and refunded");
+    }
+
+    return errorResponse(res, "Unknown status", 400);
   } catch (error) {
     return errorResponse(res, error.message, 500);
   }
