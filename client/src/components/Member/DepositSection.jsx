@@ -11,6 +11,8 @@ import { assetUrl, useDepositFlow } from "../../features/deposit/useDepositFlow"
 import { useAutoDeposit } from "../../features/deposit/useAutoDeposit";
 import { useUI } from "../../Context/uiContext";
 import PaymentModeGate, { ChangeModeButton } from "./PaymentModeGate";
+import KycGate from "./KycGate";
+import { useDepositGate } from "../../features/deposit/useDepositGate";
 
 /**
  * ম্যানুয়াল ডিপোজিট — মূল সাইটের নকশায়, BetChokkor এর কাজে।
@@ -926,6 +928,19 @@ const AutoMobile = () => {
 
 const DepositSection = () => {
   const isDesktop = useIsDesktop();
+  const { t } = useLanguage();
+  // admin "ডিপোজিটের আগে পরিচয় যাচাই" চালু রাখলে — টাকা পাঠানোর আগেই জানানো
+  const gate = useDepositGate();
+  if (gate.loading) return null;
+  if (gate.blocked) {
+    return isDesktop ? (
+      <KycGate status={gate.status} />
+    ) : (
+      <MemberShell title={t.money.depositTitle} headerIcon="deprecm3">
+        <KycGate status={gate.status} />
+      </MemberShell>
+    );
+  }
   return (
     <PaymentModeGate
       kind="deposit"

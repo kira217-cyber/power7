@@ -6,6 +6,7 @@ import { selectUser } from "../../../features/auth/authSelectors";
 import { useLogout } from "../../../features/auth/useLogout";
 import { useRefreshBalance } from "../../../features/auth/useRefreshBalance";
 import { useProfile } from "../../../features/profile/useProfile";
+import { takeKycRequest } from "../../../features/profile/kycRequest";
 import { notify } from "../../../utils/notify";
 import { copyText } from "../../../utils/referralLink";
 import { InfoDrawer, KycDrawer, PasswordDrawer, PhoneDrawer, TxDrawer, WalletDrawer } from "./DeskDrawer";
@@ -80,7 +81,8 @@ const DeskAccount = () => {
   const signOut = useLogout();
   const { refresh, refreshing } = useRefreshBalance();
   const profile = useProfile();
-  const [drawer, setDrawer] = useState(null);
+  // ডিপোজিট/উত্তোলনের "এখনই যাচাই করুন" থেকে এলে KYC ড্রয়ার খোলা
+  const [drawer, setDrawer] = useState(() => (takeKycRequest() ? "verification" : null));
   const [hidden, setHidden] = useState(false);
 
   const ov = profile.overview;

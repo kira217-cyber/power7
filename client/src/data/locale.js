@@ -107,6 +107,8 @@ export const locale = {
         "txSameAsLogin": "লগইন আর লেনদেন পাসওয়ার্ড আলাদা রাখুন",
         "alreadyVerified": "আপনার পরিচয় আগেই যাচাই হয়েছে",
         "missingImages": "সামনের দিক আর সেলফির ছবি দিন",
+        "fileTooLarge": "ছবিটা অনেক বড় — ছোট একটা ছবি দিন",
+        "badImage": "শুধু png, jpg বা webp ছবি দেওয়া যাবে",
         "otpNotVerified": "আগে যাচাই কোড দিন",
         "otpWrong": "কোডটি সঠিক নয়",
         "otpExpired": "কোডের মেয়াদ শেষ — আবার পাঠান",
@@ -504,6 +506,15 @@ export const locale = {
       reason: "কারণ",
     },
 
+    kycGate: {
+      title: "পরিচয় যাচাই দরকার",
+      hint: "ডিপোজিটের আগে পরিচয় যাচাই সম্পন্ন করুন — যাচাই অনুমোদন হলেই ডিপোজিট করতে পারবেন।",
+      pendingTitle: "পরিচয় যাচাই অপেক্ষায় আছে",
+      pendingHint: "আপনার কাগজ যাচাই হচ্ছে। অনুমোদন হলেই ডিপোজিট করতে পারবেন।",
+      rejectedHint: "আপনার আগের যাচাই বাতিল হয়েছে — কারণ দেখে আবার জমা দিন।",
+      button: "এখনই যাচাই করুন",
+      view: "যাচাইয়ের অবস্থা দেখুন",
+    },
     withdrawFlow: {
       addWallet: "ওয়ালেট যোগ করুন",
       walletMethod: "ই-ওয়ালেটের ধরন",
@@ -1120,6 +1131,8 @@ export const locale = {
         "txSameAsLogin": "Keep the login and transaction passwords different",
         "alreadyVerified": "Your identity is already verified",
         "missingImages": "Add the front side and a selfie",
+        "fileTooLarge": "The image is too large — please choose a smaller one",
+        "badImage": "Only png, jpg or webp images are allowed",
         "otpNotVerified": "Enter the verification code first",
         "otpWrong": "The code is not correct",
         "otpExpired": "The code has expired — send it again",
@@ -1517,6 +1530,15 @@ export const locale = {
       reason: "Reason",
     },
 
+    kycGate: {
+      title: "Verification needed",
+      hint: "Please complete identity verification before depositing — you can deposit once it is approved.",
+      pendingTitle: "Verification is being checked",
+      pendingHint: "Your documents are being checked. You can deposit once it is approved.",
+      rejectedHint: "Your last verification was rejected — see the reason and submit again.",
+      button: "Verify now",
+      view: "See verification status",
+    },
     withdrawFlow: {
       addWallet: "Add e-wallet",
       walletMethod: "E-wallet type",

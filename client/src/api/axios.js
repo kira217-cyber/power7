@@ -45,7 +45,8 @@ export const isApiDown = (error) => {
   if (!res) return true;
   const data = res.data;
   const json = data && typeof data === "object";
-  if (!json) return res.status >= 400;
+  // HTML/অন্য উত্তর — শুধু 5xx আর 404 (API নেই) মানে বন্ধ; nginx এর 413 (ফাইল বড়) বা 400/403 নয়
+  if (!json) return res.status >= 500 || res.status === 404;
   const message = String(data.message || "");
   if (res.status === 404 && message.startsWith("Route not found")) return true;
   if (res.status >= 500 && message === "Internal server error") return true;

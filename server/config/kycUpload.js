@@ -28,7 +28,9 @@ const kycUpload = multer({
     filename: (req, file, cb) => cb(null, `${crypto.randomBytes(16).toString("hex")}${ALLOWED.get(file.mimetype)}`),
   }),
   fileFilter: (req, file, cb) =>
-    ALLOWED.has(file.mimetype) ? cb(null, true) : cb(new Error("Only png, jpg or webp images are allowed"), false),
+    ALLOWED.has(file.mimetype)
+      ? cb(null, true)
+      : cb(Object.assign(new Error("Only png, jpg or webp images are allowed"), { status: 400, code: "badImage" }), false),
   limits: { fileSize: 8 * 1024 * 1024, files: 3 },
 });
 

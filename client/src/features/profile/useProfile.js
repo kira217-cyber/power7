@@ -7,6 +7,7 @@ import { notify } from "../../utils/notify";
 import { refreshMe, setCredentials, updateUser } from "../auth/authSlice";
 import { selectIsLoggedIn } from "../auth/authSelectors";
 import { isRemembered } from "../auth/tokenStore";
+import { shrinkImage } from "../../utils/shrinkImage";
 
 /**
  * "আমার অ্যাকাউন্ট" / "সুরক্ষা কেন্দ্র" এর ডেটা আর কাজ।
@@ -40,6 +41,8 @@ export const useProfile = () => {
   }, [load]);
 
   const errorText = (error) => {
+    // nginx এর 413 — উত্তর JSON নয়, তাই নিজের বার্তা
+    if (error?.response?.status === 413) return p.err?.fileTooLarge || t.authErr.generic;
     const code = error?.response?.data?.code;
     return p.err?.[code] || t.withdrawFlow.err?.[code] || error?.response?.data?.message || t.authErr.generic;
   };
@@ -113,9 +116,11 @@ export const useProfile = () => {
   const submitKyc = (form) =>
     run(async () => {
       const body = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (value) body.append(key, value);
-      });
+      // ফোনের বড় ছবি ছোট করে — নইলে nginx/server এর সীমায় আটকায়
+      for (const [key, value] of Object.entries(form)) {
+        if (!value) continue;
+        body.append(key, value instanceof Blob ? await shrinkImage(value) : value);
+      }
       await api.post("/api/verification", body);
     }, p.kycSent);
 

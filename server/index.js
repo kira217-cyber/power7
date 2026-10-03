@@ -196,13 +196,25 @@ app.use((req, res) => {
 
 // শেষ ভরসার এরর হ্যান্ডলার — প্রোডাকশনে ভিতরের বার্তা বাইরে যায় না
 app.use((err, req, res, next) => {
+  // আপলোডের ভুল খেলোয়াড়ের — ফাইল বড়, বেশি ফাইল, ভুল ঘর। 500 দিলে সাইট
+  // "server বন্ধ" ভেবে রক্ষণাবেক্ষণ দেখাত, তাই 400 আর বোঝার মতো বার্তা
+  if (err?.name === "MulterError") {
+    const tooBig = err.code === "LIMIT_FILE_SIZE";
+    return res.status(tooBig ? 413 : 400).json({
+      success: false,
+      code: tooBig ? "fileTooLarge" : "badUpload",
+      message: tooBig ? "The image is too large — please choose a smaller one" : `Upload problem: ${err.message}`,
+    });
+  }
+
   console.error("SERVER ERROR:", err.message);
 
-  const status = err.status || 500;
+  const status = err.status || err.statusCode || 500;
   const isProd = process.env.NODE_ENV === "production";
 
-  res.status(status).json({
+  return res.status(status).json({
     success: false,
+    ...(err.code && typeof err.code === "string" && status < 500 ? { code: err.code } : {}),
     message: isProd && status === 500 ? "Internal server error" : err.message,
   });
 });

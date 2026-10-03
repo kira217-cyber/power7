@@ -6,6 +6,7 @@ import { useLogout } from "../../features/auth/useLogout";
 import MemberShell from "./MemberShell";
 import { useProfile } from "../../features/profile/useProfile";
 import { ProfileSheet } from "./ProfileForms";
+import { takeKycRequest } from "../../features/profile/kycRequest";
 
 /** "২০২৬-০৯-২৫ ১৫:০৮:০৬" এর মতো */
 const fmtDateTime = (value) => {
@@ -47,7 +48,8 @@ const SecuritySection = () => {
   const page = t.memberPage.pages.security;
   const p = t.profileFlow;
   const profile = useProfile();
-  const [sheet, setSheet] = useState(null);
+  // ডিপোজিট/উত্তোলনের "এখনই যাচাই করুন" থেকে এলে KYC ফর্ম খোলা
+  const [sheet, setSheet] = useState(() => (takeKycRequest() ? "verification" : null));
 
   const ov = profile.overview;
   const percent = ov?.security?.percent ?? 0;

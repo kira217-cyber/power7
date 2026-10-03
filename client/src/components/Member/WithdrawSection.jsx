@@ -11,6 +11,7 @@ import MemberShell from "./MemberShell";
 import { assetUrl } from "../../features/deposit/useDepositFlow";
 import { maskNumber, useWithdrawFlow } from "../../features/withdraw/useWithdrawFlow";
 import PaymentModeGate from "./PaymentModeGate";
+import { VerifyNowButton } from "./KycGate";
 
 /**
  * উত্তোলন — মূল সাইটের নকশায় (`/m/withdraw`, ডেস্কটপে মডালের "উত্তোলন"),
@@ -116,6 +117,7 @@ const BlockPanel = ({ f }) => {
     <div style={{ marginTop: u(16, 30), borderRadius: u(8, 16), background: "#fff6f6", border: `${u(1, 2)} solid #ffd0d1`, padding: isDesktop ? "16px 18px" : `${m(30)} ${m(30)}` }}>
       <div style={{ fontSize: u(16, 32), fontWeight: 700, color: RED }}>{title}</div>
       <div style={{ marginTop: u(6, 12), fontSize: u(13, 26), color: "var(--member-text, #555)", lineHeight: 1.5 }}>{hint}</div>
+      {reason === "verification" && <VerifyNowButton status={f.elig?.verificationStatus} />}
 
       {reason === "turnover" &&
         (f.elig?.turnovers || []).map((item, index) => (

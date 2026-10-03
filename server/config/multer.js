@@ -59,7 +59,7 @@ const fileFilter = (req, file, cb) => {
   }
 
   return cb(
-    new Error("Only png, jpg, jpeg, webp, avif, svg or gif images are allowed"),
+    Object.assign(new Error("Only png, jpg, jpeg, webp, avif, svg or gif images are allowed"), { status: 400, code: "badImage" }),
     false,
   );
 };

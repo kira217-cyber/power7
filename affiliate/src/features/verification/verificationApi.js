@@ -1,4 +1,5 @@
 import { api } from "../../api/axios";
+import { shrinkImage } from "../../utils/shrinkImage";
 
 /**
  * পরিচয় যাচাই (KYC)।
@@ -20,10 +21,11 @@ export const fetchVerification = async () => {
 export const submitVerification = async (payload) => {
   const form = new FormData();
 
-  Object.entries(payload).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") return;
-    form.append(key, value);
-  });
+  // ফোনের বড় ছবি ছোট করে — নইলে nginx/server এর সীমায় আটকায়
+  for (const [key, value] of Object.entries(payload)) {
+    if (value === undefined || value === null || value === "") continue;
+    form.append(key, value instanceof Blob ? await shrinkImage(value) : value);
+  }
 
   const { data } = await api.post("/api/verification", form);
   return data?.data?.verification || null;
