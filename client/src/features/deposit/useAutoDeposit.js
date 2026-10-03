@@ -63,7 +63,8 @@ export const useAutoDeposit = () => {
   const errorText = (error) => {
     const code = error?.response?.data?.code;
     if (error?.response?.status === 401) return t.games.needLogin;
-    return p.err?.[code] || t.withdrawFlow?.err?.[code] || error?.response?.data?.message || t.authErr.generic;
+    if (code === "needVerification") window.dispatchEvent(new Event("tb:kyc-required"));
+    return p.err?.[code] || t.depositFlow?.err?.[code] || t.withdrawFlow?.err?.[code] || error?.response?.data?.message || t.authErr.generic;
   };
 
   const pay = async () => {

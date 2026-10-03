@@ -14,18 +14,28 @@ export const useDepositGate = () => {
 
   useEffect(() => {
     let alive = true;
-    api
-      .get("/api/verification/my")
-      .then(({ data }) => {
-        const info = data?.data || {};
-        const status = info.verification?.status || "none";
-        const blocked = Boolean(info.setting?.requireForDeposit) && status !== "approved";
-        if (alive) setState({ loading: false, blocked, status });
-      })
-      // জানা না গেলে আটকানো নয় — server জমার সময় নিজেই দেখে
-      .catch(() => alive && setState({ loading: false, blocked: false, status: "none" }));
+    const check = () =>
+      api
+        .get("/api/verification/my")
+        .then(({ data }) => {
+          const info = data?.data || {};
+          const status = info.verification?.status || "none";
+          const blocked = Boolean(info.setting?.requireForDeposit) && status !== "approved";
+          if (alive) setState({ loading: false, blocked, status });
+        })
+        // জানা না গেলে আটকানো নয় — server জমার সময় নিজেই দেখে
+        .catch(() => alive && setState((prev) => ({ ...prev, loading: false })));
+
+    check();
+    // পাতা খোলা থাকতেই admin সুইচ বদলালে — ট্যাবে ফিরে এলে আবার দেখা
+    const onVisible = () => document.visibilityState === "visible" && check();
+    // জমা দিতে গিয়ে server আটকালে (needVerification) — পাতাও সাথে সাথে বার্তায়
+    window.addEventListener("tb:kyc-required", check);
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       alive = false;
+      window.removeEventListener("tb:kyc-required", check);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 

@@ -145,6 +145,7 @@ export const useDepositFlow = () => {
       // টোকেনের মেয়াদ শেষ হলে axios নিজেই লগআউট করায়; এখানে শুধু কারণটা
       if (error?.response?.status === 401) notify.warning(t.games.needLogin);
       else notify.error(d.err?.[code] || error?.response?.data?.message || t.authErr.generic);
+      if (code === "needVerification") window.dispatchEvent(new Event("tb:kyc-required"));
     } finally {
       setBusy(false);
     }

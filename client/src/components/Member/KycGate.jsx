@@ -49,7 +49,7 @@ const KycGate = ({ status }) => {
   return (
     <div
       style={{
-        margin: isDesktop ? "24px auto" : `${m(30)} ${m(24)}`,
+        margin: isDesktop ? "0 auto" : `${m(30)} ${m(24)}`,
         maxWidth: isDesktop ? 560 : "none",
         borderRadius: u(8, 16),
         background: "#fff6f6",

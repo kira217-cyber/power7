@@ -934,7 +934,10 @@ const DepositSection = () => {
   if (gate.loading) return null;
   if (gate.blocked) {
     return isDesktop ? (
-      <KycGate status={gate.status} />
+      // modal এর ডান দিক পুরোটা সাদা — ডিপোজিট পাতার মতোই (১২৯০ − মেনু ১৮০ = ১১১০ × ৬২০)
+      <div style={{ width: 1110, height: 620, background: "var(--member-surface, #fff)", padding: "40px 32px" }}>
+        <KycGate status={gate.status} />
+      </div>
     ) : (
       <MemberShell title={t.money.depositTitle} headerIcon="deprecm3">
         <KycGate status={gate.status} />
