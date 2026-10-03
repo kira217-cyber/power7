@@ -402,7 +402,7 @@ const Verification = ({ kind = "users" }) => {
       {/* ── কাগজপত্র দেখা ও সিদ্ধান্ত ── */}
       {open ? (
         <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/70 p-4">
-          <div className="ad-card w-full max-w-[720px]">
+          <div className="ad-card ad-modal w-full max-w-[720px]">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-[18px] font-extrabold text-[var(--neutral100)]">

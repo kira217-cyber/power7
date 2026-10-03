@@ -546,7 +546,7 @@ const Admins = () => {
       {/* ── ডিলিট নিশ্চিতকরণ ── */}
       {deleteId && (
         <div className="fixed inset-0 z-[99] flex items-center justify-center bg-black/70 p-4">
-          <div className="ad-card w-full max-w-[400px]">
+          <div className="ad-card ad-modal w-full max-w-[400px]">
             <span className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-[var(--status-danger)]/30 bg-[var(--status-danger)]/10 text-[var(--status-danger)]">
               <Trash2 size={19} />
             </span>

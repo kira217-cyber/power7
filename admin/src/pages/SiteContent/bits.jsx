@@ -76,7 +76,7 @@ export const Modal = ({ title, onClose, children, width = 620 }) =>
       onClick={onClose}
     >
       <div
-        className="ad-card ad-scroll relative max-h-[92vh] w-full overflow-y-auto"
+        className="ad-card ad-modal ad-scroll relative max-h-[92vh] w-full overflow-y-auto"
         style={{ maxWidth: width }}
         onClick={(e) => e.stopPropagation()}
       >

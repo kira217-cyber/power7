@@ -413,3 +413,15 @@ body {
   isolation: isolate;
   transform: translateZ(0);
 }
+
+/* ── modal এর বাক্স ──
+   ad-card এর পটভূমি ৬% স্বচ্ছ সাদা — পাতার উপরে ভাসলে পিছনের লেখা ভিতর
+   দিয়ে দেখা যায়। modal এ একই চেহারা, কিন্তু নিচে নিরেট গাঢ় রঙ। */
+.ad-card.ad-modal {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)),
+    var(--neutral1000);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
+}

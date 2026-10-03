@@ -373,7 +373,7 @@ const AffWithdrawRequests = () => {
           onClick={() => setOpen(null)}
         >
           <div
-            className="ad-card max-h-[86vh] w-full max-w-[520px] overflow-y-auto"
+            className="ad-card ad-modal max-h-[86vh] w-full max-w-[520px] overflow-y-auto"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-start justify-between gap-4">

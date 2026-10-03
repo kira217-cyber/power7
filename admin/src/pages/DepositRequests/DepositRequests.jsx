@@ -344,7 +344,7 @@ const DepositRequests = () => {
           onClick={() => setOpen(null)}
         >
           <div
-            className="ad-card max-h-[86vh] w-full max-w-[560px] overflow-y-auto"
+            className="ad-card ad-modal max-h-[86vh] w-full max-w-[560px] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-start justify-between gap-4">
