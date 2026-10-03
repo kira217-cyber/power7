@@ -416,8 +416,14 @@ body {
 
 /* ── modal এর বাক্স ──
    ad-card এর পটভূমি ৬% স্বচ্ছ সাদা — পাতার উপরে ভাসলে পিছনের লেখা ভিতর
-   দিয়ে দেখা যায়। modal এ একই চেহারা, কিন্তু নিচে নিরেট গাঢ় রঙ। */
+   দিয়ে দেখা যায়। modal এ একই চেহারা, কিন্তু নিচে নিরেট গাঢ় রঙ।
+   ad-card এর `overflow: hidden` (layer এর বাইরে, তাই Tailwind এর
+   overflow-y-auto কে হারায়) লম্বা modal কেটে দিত — এখানে পর্দার মাপে
+   আটকে নিজের ভিতরে scroll। */
 .ad-card.ad-modal {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background:
     linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)),
     var(--neutral1000);

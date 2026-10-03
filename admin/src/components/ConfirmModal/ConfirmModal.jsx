@@ -50,7 +50,7 @@ const ConfirmModal = ({
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-[420px] overflow-hidden rounded-[18px] border bg-[var(--neutral1000)] shadow-2xl"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-[420px] overflow-y-auto overscroll-contain rounded-[18px] border bg-[var(--neutral1000)] shadow-2xl"
         style={{ borderColor: "color-mix(in srgb, var(--neutral100), transparent 88%)" }}
       >
         <div className="flex items-start gap-3 p-5">
