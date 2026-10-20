@@ -11,6 +11,7 @@ import { successResponse, errorResponse } from "../utils/response.js";
 import { checkCaptcha } from "../utils/captcha.js";
 import { removeKycFile, signedKycUrl } from "../utils/kycFiles.js";
 import { num } from "../utils/money.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 /**
  * "অভিযোগ / পরামর্শ" — খেলোয়াড় পাঠান (ধরন, লেখা, ঐচ্ছিক ছবি, ক্যাপচা),
@@ -58,6 +59,7 @@ router.post("/", protectUser, sendLimiter, kycUpload.single("image"), async (req
       content,
       image: req.file?.filename || "",
     });
+    notifyAdmin("feedback", { message: `${req.user.userId} · ${String(content).slice(0, 120)}` });
     return successResponse(res, "Feedback sent", { id: row._id }, 201);
   } catch (error) {
     cleanup();

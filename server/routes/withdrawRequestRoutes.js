@@ -19,6 +19,7 @@ import { checkTxPassword } from "../utils/txPassword.js";
 import { creditUser, writeLogs } from "../utils/wallet.js";
 import { dayStart } from "../utils/referral.js";
 import { lockWithdraw, unlockWithdraw } from "../utils/withdrawLock.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 const router = express.Router();
 
@@ -255,6 +256,8 @@ router.post("/", protectUser, async (req, res) => {
         balanceAfter: money(user.balance),
         status: "pending",
       });
+
+      notifyAdmin("withdraw-request", { message: `${user.userId} · ${taka(amount)} · ${method.name?.en || methodId} ${wallet.walletNumber}` });
 
       await writeLogs(user._id, user.balance, [
         { type: "withdraw", amount: -amount, refType: "WithdrawRequest", refId: request._id, note: `${method.name?.en || methodId} ${wallet.walletNumber}` },

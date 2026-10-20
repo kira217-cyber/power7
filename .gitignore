@@ -31,3 +31,6 @@ server/private/
 
 # VPS এ তোলার ফোল্ডার — build আর লাইভ .env (গোপন)
 Deploy/
+
+# মালিকের Notification App এর APK এর আসল কপি (admin/public এ যেটা যায়)
+/notification.apk

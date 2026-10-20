@@ -13,6 +13,7 @@ import { verificationGate } from "../utils/verificationGate.js";
 import { num, money } from "../utils/money.js";
 import { creditUser, writeLogs } from "../utils/wallet.js";
 import { onlyAffiliate } from "./affiliateRoutes.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 /**
  * অ্যাফিলিয়েটের উত্তোলন — `/api/aff-withdraw`।
@@ -174,6 +175,7 @@ router.post("/", protectUser, onlyAffiliate, async (req, res) => {
       throw error;
     }
     await writeLogs(user._id, user.balance, [{ type: "withdraw", amount: -amount, refType: "AffWithdrawRequest", refId: request._id, note: `Affiliate withdraw (${methodId})` }]);
+    notifyAdmin("aff-withdraw", { message: `${user.userId} · ${taka(amount)} · ${methodId}` });
     return successResponse(res, "Withdraw submitted", { request }, 201);
   } catch (error) {
     return errorResponse(res, error.message, 500);

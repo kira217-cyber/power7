@@ -17,6 +17,7 @@ import { addCommission, creditUser, writeLogs } from "../utils/wallet.js";
 import { onReferralDeposit } from "../utils/referral.js";
 import { onTemuTask } from "../utils/reward.js";
 import { gatewayPost } from "../utils/oraclePay.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 /**
  * অটো ডিপোজিট (OraclePay) — `/api/auto-deposit`।
@@ -428,6 +429,8 @@ const creditDeposit = async (invoiceNumber, patch = {}, by = null) => {
     console.error("Referral deposit rebate failed:", error.message),
   );
 
+  // admin নিজে নিশ্চিত করলে তিনি জানেনই — শুধু গেটওয়ের নিশ্চিতকরণে
+  if (!by) notifyAdmin("auto-deposit", { message: `${deposit.userIdText || ""} · ${taka(deposit.amount)} · ${deposit.bank || "OraclePay"}` });
   return deposit;
 };
 

@@ -22,6 +22,7 @@ import {
   normalizeCountryCode,
   normalizePhone,
 } from "../utils/phone.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 const router = express.Router();
 
@@ -406,6 +407,10 @@ router.post("/register", authLimiter, async (req, res) => {
      * ড্যাশবোর্ডে সব শূন্য দেখাত, আর তিনি খেলোয়াড় আনতে শুরু করে
      * দিতেন — অথচ হার শূন্য বলে কোনো কমিশনই জমত না।
      */
+    notifyAdmin(site === "affiliate" ? "affiliate-register" : "user-register", {
+      message: [user.userId, user.phone, referralCode && `ref ${referralCode}`].filter(Boolean).join(" · "),
+    });
+
     if (site === "affiliate") {
       return successResponse(
         res,
@@ -540,6 +545,8 @@ router.post("/login", authLimiter, async (req, res) => {
     user.lastLoginAt = new Date();
     user.lastLoginIp = req.ip || "";
     await user.save();
+
+    notifyAdmin(user.role === "aff-user" ? "affiliate-login" : "user-login", { message: `${user.userId} · ${user.lastLoginIp}` });
 
     return successResponse(res, "Login successful", {
       token: issueToken(user),

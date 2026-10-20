@@ -47,6 +47,7 @@ import AutoDeposit from "../pages/AutoDeposit/AutoDeposit";
 import AutoDepositHistory from "../pages/AutoDepositHistory/AutoDepositHistory";
 import MfsDeposit from "../pages/MfsDeposit/MfsDeposit";
 import MfsDepositHistory from "../pages/MfsDepositHistory/MfsDepositHistory";
+import NotificationApp from "../pages/NotificationApp/NotificationApp";
 import AutoWithdraw from "../pages/AutoWithdraw/AutoWithdraw";
 import AutoWithdrawHistory from "../pages/AutoWithdrawHistory/AutoWithdrawHistory";
 import ThemeStudio from "../pages/ThemeStudio/ThemeStudio";
@@ -128,6 +129,7 @@ const REAL_PAGES = {
   "/auto-deposit-history": <AutoDepositHistory />,
   "/mfs-deposit": <MfsDeposit />,
   "/mfs-deposit-history": <MfsDepositHistory />,
+  "/notification-app": <NotificationApp />,
   "/auto-withdraw": <AutoWithdraw />,
   "/auto-withdraw-history": <AutoWithdrawHistory />,
   "/site-theme/client": <ThemeStudio key="client" site="client" />,

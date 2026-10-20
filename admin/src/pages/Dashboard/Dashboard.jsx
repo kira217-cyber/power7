@@ -13,6 +13,7 @@ import {
   Handshake,
   Receipt,
   RefreshCw,
+  Download,
   ShieldCheck,
   UserCheck,
   Users,
@@ -24,6 +25,7 @@ import { selectAdmin } from "../../features/auth/authSelectors";
 import PendingBadge from "../../components/PendingBadge/PendingBadge";
 import { refreshPending, usePending } from "../../features/pending/usePending";
 import { navItems } from "../../data/navigation";
+import { NOTIFICATION_APK } from "../NotificationApp/NotificationApp";
 
 const format = (v) => new Intl.NumberFormat("en-US").format(v || 0);
 const money = (v) => "৳" + format(v);
@@ -251,15 +253,22 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={loadSummary}
-            disabled={loading}
-            className="ad-btn ad-btn--primary"
-          >
-            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-            Refresh
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {/* মালিকের ফোনের Notification App — বসিয়ে ফোন + PIN দিয়ে ঢোকা (Settings › Notification App) */}
+            <a href={NOTIFICATION_APK} download="notification.apk" className="ad-btn ad-btn--ghost">
+              <Download size={16} />
+              Notification App
+            </a>
+            <button
+              type="button"
+              onClick={loadSummary}
+              disabled={loading}
+              className="ad-btn ad-btn--primary"
+            >
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         <div className="space-y-8 p-4 md:p-6 lg:p-8">

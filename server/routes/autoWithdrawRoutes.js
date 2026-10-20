@@ -18,6 +18,7 @@ import { creditUser, writeLogs } from "../utils/wallet.js";
 import { gatewayPost } from "../utils/oraclePay.js";
 import { checkEligibility } from "./withdrawRequestRoutes.js";
 import { lockWithdraw, unlockWithdraw } from "../utils/withdrawLock.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 /**
  * অটো উইথড্র (OraclePay) — `/api/auto-withdraw`।
@@ -214,6 +215,8 @@ router.post("/create", protectUser, async (req, res) => {
     await writeLogs(user._id, user.balance, [
       { type: "withdraw", amount: -amount, refType: "AutoWithdraw", refId: record._id, note: `Auto ${method.name?.en || code} ${walletNumber}` },
     ]);
+
+    notifyAdmin("auto-withdraw", { message: `${user.userId} · ${taka(amount)} · ${method.name?.en || code} ${walletNumber}` });
 
     // গেটওয়েতে এখন নয় — admin অনুমোদন দিলে তবেই (POST /withdrawals/:id/approve)
     return successResponse(

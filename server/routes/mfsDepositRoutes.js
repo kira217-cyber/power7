@@ -17,6 +17,7 @@ import { addCommission, creditUser, writeLogs } from "../utils/wallet.js";
 import { onReferralDeposit } from "../utils/referral.js";
 import { onTemuTask } from "../utils/reward.js";
 import { amountsOf, cleanProviders, computeBonus, sameKey } from "./autoDepositRoutes.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 /**
  * পার্সোনাল অটো ডিপোজিট (MFSWallet) — `/api/mfs-deposit`।
@@ -436,6 +437,7 @@ const creditDeposit = async (filter, patch = {}, by = null) => {
   await onReferralDeposit({ userId: deposit.user, amount: num(deposit.amount), requestId: deposit._id }).catch((error) =>
     console.error("Referral deposit rebate failed:", error.message),
   );
+  if (!by) notifyAdmin("mfs-deposit", { message: `${deposit.userIdText || ""} · ${taka(deposit.amount)} · ${methodName}` });
   return deposit;
 };
 
@@ -483,7 +485,9 @@ router.post("/webhook/:kind/:key", async (req, res) => {
     }
     if (expected === "PENDING") {
       // গেটওয়ে নিজে মেলাতে পারেনি — admin যাচাই করে নিশ্চিত বা বাতিল করবেন
-      await MfsDeposit.updateOne({ _id: existing._id, status: "PENDING", balanceAdded: false }, { $set: { needsReview: true, ...set(info) } });
+      const marked = await MfsDeposit.updateOne({ _id: existing._id, status: "PENDING", balanceAdded: false, needsReview: { $ne: true } }, { $set: { needsReview: true, ...set(info) } });
+      if (!marked.modifiedCount) await MfsDeposit.updateOne({ _id: existing._id, status: "PENDING", balanceAdded: false }, { $set: set(info) });
+      else notifyAdmin("mfs-review", { message: `${existing.userIdText || ""} · ${taka(existing.amount)} · ${existing.method}` });
       return successResponse(res, "Pending recorded");
     }
 

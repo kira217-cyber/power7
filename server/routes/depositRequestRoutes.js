@@ -17,6 +17,7 @@ import { buildDepositCalc, normalizePromoScope, num, money } from "../utils/depo
 import { addCommission, creditUser, debitUser, writeLogs } from "../utils/wallet.js";
 import { onReferralDeposit } from "../utils/referral.js";
 import { onTemuTask } from "../utils/reward.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 const router = express.Router();
 
@@ -161,6 +162,7 @@ router.post("/", protectUser, async (req, res) => {
     const safe = request.toObject();
     if (safe.calc) delete safe.calc.affiliateDepositCommission;
 
+    notifyAdmin("deposit-request", { message: `${user.userId} · ${taka(amount)} · ${method.methodId}` });
     return successResponse(res, "Deposit request submitted", { request: safe }, 201);
   } catch (error) {
     return errorResponse(res, error.message, 500);

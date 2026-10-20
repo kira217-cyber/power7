@@ -11,6 +11,7 @@ import { protectAdmin, requireMother, requirePermission, requireWrite } from "..
 import { successResponse, errorResponse } from "../utils/response.js";
 import { isOtpRequired, isVerified, clearOtp } from "../utils/otp.js";
 import { removeKycFile, resolveSignedFile, withSignedImages } from "../utils/kycFiles.js";
+import { notifyAdmin, taka } from "../utils/adminNotify.js";
 
 /**
  * পরিচয় যাচাই (KYC) — খেলোয়াড় ও অ্যাফিলিয়েট কাগজ জমা দেন, admin দেখে
@@ -146,6 +147,7 @@ router.post(
       await User.updateOne({ _id: req.user._id }, { $set: { verificationStatus: "pending" } });
       if (req.user.phone) clearOtp(otpTarget);
 
+      notifyAdmin(row.role === "aff-user" ? "affiliate-verification" : "user-verification", { message: `${req.user.userId} · ${fullName} · ${documentType}` });
       return successResponse(res, "Verification submitted", { verification: withSignedImages(row.toObject()) });
     } catch (error) {
       uploaded.forEach(removeKycFile);
