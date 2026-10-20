@@ -320,7 +320,7 @@ const NotificationApp = () => {
               <label className="ad-label" htmlFor="nt-key">
                 API key (x-api-key)
               </label>
-              <SecretInput id="nt-key" autoComplete="off" placeholder={setting.hasKey ? "Leave blank to keep the current one" : "x-api-key"} value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
+              <SecretInput id="nt-key" autoComplete="off" placeholder={setting.hasKey ? `Saved ✓ ${setting.keyPreview} — leave blank to keep it` : "x-api-key"} value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
             </div>
           </div>
         </div>
