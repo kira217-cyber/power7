@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import User from "../models/User.js";
 import ReferralReward from "../models/ReferralReward.js";
 import ReferralSetting from "../models/ReferralSetting.js";
-import DepositRequest from "../models/DepositRequest.js";
 import { protectUser } from "../middleware/protectUser.js";
 import { protectAdmin, requireMother, requirePermission, requireWrite } from "../middleware/protectAdmin.js";
 import { successResponse, errorResponse } from "../utils/response.js";
@@ -18,6 +17,7 @@ import {
   monthStart,
   syncMilestones,
 } from "../utils/referral.js";
+import { depositorsSince } from "../utils/depositSources.js";
 
 /**
  * "বন্ধুদের আমন্ত্রণ করুন" — মূল সাইটের পাঁচ ট্যাব: সারসংক্ষেপ, পুরস্কার,
@@ -61,8 +61,8 @@ const depositorsOf = async (me, since = null) => {
   if (!since) return User.countDocuments({ referredBy: me, totalDeposit: { $gt: 0 } });
   const ids = await User.find({ referredBy: me }).distinct("_id");
   if (!ids.length) return 0;
-  const found = await DepositRequest.distinct("user", { user: { $in: ids }, status: "approved", approvedAt: { $gte: since } });
-  return found.length;
+  // ম্যানুয়াল + অটো + পার্সোনাল অটো
+  return (await depositorsSince(ids, since)).length;
 };
 
 const pageOf = (query) => {

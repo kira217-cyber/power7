@@ -1072,6 +1072,38 @@ const UserDetails = ({ kind }) => {
           { key: "status", label: "Status", render: (r) => <Pill value={r.status} /> },
         ]}
       />
+      <HistoryTable
+        title="Personal auto deposit history"
+        subtitle="MFSWallet payments (bKash / Nagad / Rocket / Upay to your own numbers)."
+        icon={<Landmark size={17} />}
+        userId={id}
+        path="mfs-deposits"
+        primaryKeys={["when", "invoice", "amount", "credited", "status"]}
+        minWidth={1080}
+        statuses={[
+          { key: "all", label: "All" },
+          { key: "PENDING", label: "Pending" },
+          { key: "PAID", label: "Paid" },
+          { key: "FAILED", label: "Failed" },
+        ]}
+        summaryCards={[
+          (sum) => ({ label: "Total deposit", value: money(sum.amount), tone: "var(--primary500)", sub: `${sum.count || 0} payments` }),
+          (sum) => ({ label: "Total bonus", value: money(sum.bonus), tone: "var(--status-success)" }),
+          (sum) => ({ label: "Credited", value: money(sum.credited) }),
+          (sum, counts) => ({ label: "Paid / failed", value: `${counts.PAID || 0} / ${counts.FAILED || 0}` }),
+        ]}
+        columns={[
+          { key: "when", label: "When", render: (r) => new Date(r.createdAt).toLocaleString() },
+          { key: "invoice", label: "Invoice", render: (r) => r.invoiceNumber },
+          { key: "method", label: "Method", render: (r) => r.method || "—" },
+          { key: "amount", label: "Amount", render: (r) => money(r.amount) },
+          { key: "bonus", label: "Bonus", render: (r) => money(r.calc?.bonusAmount) },
+          { key: "credited", label: "Credited", render: (r) => money(r.calc?.creditedAmount) },
+          { key: "trx", label: "TrxID", render: (r) => r.transactionId || "—" },
+          { key: "sender", label: "Sender", render: (r) => r.senderNumber || "—" },
+          { key: "status", label: "Status", render: (r) => <Pill value={r.needsReview && r.status === "PENDING" ? "REVIEW" : r.status} /> },
+        ]}
+      />
 
       <HistoryTable
         title="Withdraw history"

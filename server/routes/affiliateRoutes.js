@@ -2,7 +2,6 @@ import express from "express";
 import mongoose from "mongoose";
 
 import User from "../models/User.js";
-import DepositRequest from "../models/DepositRequest.js";
 import GameHistory from "../models/GameHistory.js";
 import { AffSettlement } from "../models/AffWithdraw.js";
 
@@ -12,6 +11,7 @@ import { successResponse, errorResponse } from "../utils/response.js";
 import { num, money } from "../utils/money.js";
 import { creditUser, writeLogs } from "../utils/wallet.js";
 import { monthStart } from "../utils/referral.js";
+import { sumDeposits } from "../utils/depositSources.js";
 
 /**
  * অ্যাফিলিয়েটের নিজের পাতা — `/api/affiliate`।
@@ -71,12 +71,8 @@ router.get("/me", protectUser, onlyAffiliate, async (req, res) => {
       User.find(mine)
         .select("_id")
         .lean()
-        .then((rows) =>
-          DepositRequest.aggregate([
-            { $match: { status: "approved", user: { $in: rows.map((r) => r._id) } } },
-            { $group: { _id: null, total: { $sum: "$amount" }, count: { $sum: 1 } } },
-          ]),
-        ),
+        // ম্যানুয়াল + অটো + পার্সোনাল অটো — আগের শেপেই ([{ total, count }])
+        .then((rows) => sumDeposits(rows.map((r) => r._id)).then((d) => [{ total: d.amount, count: d.count }])),
       GameHistory.aggregate([
         { $match: { affiliateUser: user._id } },
         { $group: { _id: null, bet: { $sum: "$betAmount" }, commission: { $sum: "$affiliateCommissionAmount" }, count: { $sum: 1 } } },

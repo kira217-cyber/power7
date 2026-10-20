@@ -50,6 +50,8 @@ import {
 } from "lucide-react";
 
 import { navItems, roleLabels } from "../data/navigation";
+import PendingBadge from "../components/PendingBadge/PendingBadge";
+import { usePending } from "../features/pending/usePending";
 import { logout } from "../features/auth/authSlice";
 import { selectAdmin } from "../features/auth/authSelectors";
 
@@ -153,6 +155,7 @@ const RootLayout = () => {
 
   // ড্রপডাউনের ভিতরের লিংকগুলোও আলাদা করে বাছা হয় — নইলে sub অ্যাডমিন
   // এমন লিংক দেখতেন যেটা খুললে 403 ছাড়া কিছু নেই
+  const pending = usePending();
   const visibleItems = navItems
     .filter(canSee)
     .map((item) =>
@@ -200,6 +203,8 @@ const RootLayout = () => {
                 >
                   <Icon size={18} className="shrink-0" />
                   {item.label}
+                  {/* ভিতরের অপেক্ষমাণ কাজের যোগফল — গ্রুপ বন্ধ থাকলেও চোখে পড়ে */}
+                  <PendingBadge count={item.children.reduce((sum, child) => sum + (pending[child.key] || 0), 0)} className="ms-auto" />
 
                   <ChevronDown
                     size={16}
@@ -223,6 +228,7 @@ const RootLayout = () => {
                         >
                           <ChildIcon size={17} className="shrink-0" />
                           {child.label}
+                          <PendingBadge count={pending[child.key] || 0} className="ms-auto" />
                         </NavLink>
                       );
                     })}
@@ -242,6 +248,7 @@ const RootLayout = () => {
             >
               <Icon size={18} className="shrink-0" />
               {item.label}
+              <PendingBadge count={pending[item.key] || 0} className="ms-auto" />
             </NavLink>
           );
         })}

@@ -21,7 +21,15 @@ const num = (v) => {
 };
 const money = (v) => Math.round(num(v) * 100) / 100;
 
-export const useAutoDeposit = () => {
+/**
+ * `kind`: "auto" = OraclePay (মাধ্যম গেটওয়ের পাতায় বাছা হয়), "mfs" = পার্সোনাল অটো
+ * ডিপোজিট / MFSWallet (মাধ্যম এখানেই বাছতে হয় — bKash/Nagad/Rocket/Upay, নিজের সীমাসহ)।
+ */
+const BASE = { auto: "/api/auto-deposit", mfs: "/api/mfs-deposit" };
+
+export const useAutoDeposit = (kind = "auto") => {
+  const base = BASE[kind] || BASE.auto;
+  const needsMethod = kind === "mfs";
   const { t, lang } = useLanguage();
   const p = t.payMode;
   const tv = useCallback((v) => (v && typeof v === "object" ? v[lang] || v.bn || v.en || "" : v || ""), [lang]);
@@ -30,22 +38,27 @@ export const useAutoDeposit = () => {
   const [loading, setLoading] = useState(true);
   const [amount, setAmountRaw] = useState("");
   const [bonusId, setBonusId] = useState("");
+  const [methodCode, setMethodCode] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let alive = true;
     api
-      .get("/api/auto-deposit/status")
+      .get(`${base}/status`)
       .then(({ data }) => alive && setStatus(data?.data || { active: false }))
       .catch(() => alive && setStatus({ active: false }))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-  }, []);
+  }, [base]);
 
-  const min = num(status?.minAmount);
-  const max = num(status?.maxAmount);
+  // মাধ্যম একটাই হলে সেটাই বাছা
+  const methods = useMemo(() => status?.methods || [], [status]);
+  const method = methods.find((m) => m.code === methodCode) || (needsMethod && methods.length === 1 ? methods[0] : null);
+  // পার্সোনাল অটোতে মাধ্যমের নিজের সীমা
+  const min = num(needsMethod && method ? method.minAmount : status?.minAmount);
+  const max = num(needsMethod && method ? method.maxAmount : status?.maxAmount);
   const bonuses = useMemo(() => status?.bonuses || [], [status]);
   const bonus = bonuses.find((b) => b._id === bonusId) || null;
   const presets = PRESET_AMOUNTS.filter((v) => (!min || v >= min) && (!max || v <= max));
@@ -70,6 +83,7 @@ export const useAutoDeposit = () => {
   const pay = async () => {
     if (busy) return;
     const amt = money(amount);
+    if (needsMethod && !method) return notify.warning(p.err.chooseMethod);
     if (!amt) return notify.warning(p.enterAmount);
     if ((min && amt < min) || (max && amt > max)) {
       return notify.warning(p.limitErr.replace("{min}", min.toLocaleString("en-US")).replace("{max}", max.toLocaleString("en-US")));
@@ -78,7 +92,7 @@ export const useAutoDeposit = () => {
     setBusy(true);
     const done = notify.pending(p.starting);
     try {
-      const { data } = await api.post("/api/auto-deposit/create", { amount: amt, bonusId: bonusId || undefined });
+      const { data } = await api.post(`${base}/create`, { amount: amt, bonusId: bonusId || undefined, ...(needsMethod ? { method: method.code } : {}) });
       done();
       const url = data?.data?.paymentUrl;
       if (url) window.location.assign(url);
@@ -92,7 +106,7 @@ export const useAutoDeposit = () => {
     return undefined;
   };
 
-  return { loading, status, min, max, bonuses, bonus, bonusId, setBonusId, presets, amount, setAmount, preview, busy, pay, tv };
+  return { loading, status, min, max, bonuses, bonus, bonusId, setBonusId, presets, amount, setAmount, preview, busy, pay, tv, needsMethod, methods, method, setMethod: setMethodCode };
 };
 
 export default useAutoDeposit;

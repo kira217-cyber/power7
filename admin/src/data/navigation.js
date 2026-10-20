@@ -121,6 +121,29 @@ export const navItems = [
     ],
   },
 
+  // পার্সোনাল অটো ডিপোজিট — MFSWallet (নিজের SIM এর bKash/Nagad/Rocket/Upay)
+  {
+    key: "mfswallet",
+    label: "MFSWallet",
+    icon: "Smartphone",
+    children: [
+      {
+        key: "mfs-deposit",
+        path: "/mfs-deposit",
+        label: "Personal Auto Deposit",
+        icon: "Zap",
+        motherOnly: true,
+      },
+      {
+        key: "mfs-deposit-history",
+        path: "/mfs-deposit-history",
+        label: "Personal Auto Deposit History",
+        icon: "Receipt",
+        perm: "mfs-deposit-history",
+      },
+    ],
+  },
+
   {
     key: "withdraw",
     label: "Withdraw",
@@ -354,6 +377,11 @@ export const allPermissions = [
     key: "auto-deposit-history",
     label: "Auto Deposit History",
     path: "/auto-deposit-history",
+  },
+  {
+    key: "mfs-deposit-history",
+    label: "Personal Auto Deposit History",
+    path: "/mfs-deposit-history",
   },
   {
     key: "auto-withdraw-history",

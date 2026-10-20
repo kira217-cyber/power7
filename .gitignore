@@ -28,3 +28,6 @@ Thumbs.db
 
 # KYC documents (private, never public)
 server/private/
+
+# VPS এ তোলার ফোল্ডার — build আর লাইভ .env (গোপন)
+Deploy/

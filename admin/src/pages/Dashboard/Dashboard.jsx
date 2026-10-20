@@ -16,10 +16,14 @@ import {
   ShieldCheck,
   UserCheck,
   Users,
+  Zap,
 } from "lucide-react";
 
 import { api } from "../../api/axios";
 import { selectAdmin } from "../../features/auth/authSelectors";
+import PendingBadge from "../../components/PendingBadge/PendingBadge";
+import { refreshPending, usePending } from "../../features/pending/usePending";
+import { navItems } from "../../data/navigation";
 
 const format = (v) => new Intl.NumberFormat("en-US").format(v || 0);
 const money = (v) => "৳" + format(v);
@@ -70,22 +74,31 @@ const SUMMARY_CARDS = [
   { key: "allUsers", label: "All Users", Icon: Users, to: "/users" },
   { key: "activeUsers", label: "Active Users", Icon: UserCheck, to: "/users" },
   { key: "allAffiliateUsers", label: "Affiliate Users", Icon: Handshake, to: "/affiliates" },
-  { key: "allDepositBalances", label: "Total Deposit", Icon: ArrowDownToLine, money: true, to: "/deposit-requests" },
-  { key: "pendingDepositRequest", label: "Pending Deposit", Icon: Clock, to: "/deposit-requests" },
-  { key: "allWithdrawBalances", label: "Total Withdraw", Icon: ArrowUpFromLine, money: true, to: "/withdraw-requests" },
-  { key: "pendingWithdrawRequest", label: "Pending Withdraw", Icon: Clock, to: "/withdraw-requests" },
+  { key: "allDepositBalances", label: "Manual Deposit (total)", Icon: ArrowDownToLine, money: true, to: "/deposit-requests" },
+  { key: "pendingDepositRequest", label: "Pending Manual Deposit", Icon: Clock, to: "/deposit-requests", pending: "deposit-requests" },
+  { key: "allWithdrawBalances", label: "Manual Withdraw (total)", Icon: ArrowUpFromLine, money: true, to: "/withdraw-requests" },
+  { key: "pendingWithdrawRequest", label: "Pending Manual Withdraw", Icon: Clock, to: "/withdraw-requests", pending: "withdraw-requests" },
   { key: "totalUserBalance", label: "Total User Balance", Icon: Coins, money: true, to: "/users" },
 ];
 
 const TODAY_CARDS = [
   { key: "newUsers", label: "New Users", Icon: Users, to: "/users" },
   { key: "newAffiliates", label: "New Affiliates", Icon: Handshake, to: "/affiliates" },
-  { key: "deposit", label: "Deposit", Icon: ArrowDownToLine, money: true, to: "/deposit-requests" },
-  { key: "withdraw", label: "Withdraw", Icon: ArrowUpFromLine, money: true, to: "/withdraw-requests" },
-  { key: "depositCount", label: "Deposit Count", Icon: Receipt, to: "/deposit-requests" },
-  { key: "withdrawCount", label: "Withdraw Count", Icon: Receipt, to: "/withdraw-requests" },
-  { key: "pendingDeposit", label: "Pending Deposit", Icon: Clock, to: "/deposit-requests" },
-  { key: "pendingWithdraw", label: "Pending Withdraw", Icon: Clock, to: "/withdraw-requests" },
+  { key: "deposit", label: "Manual Deposit", Icon: ArrowDownToLine, money: true, to: "/deposit-requests" },
+  { key: "withdraw", label: "Manual Withdraw", Icon: ArrowUpFromLine, money: true, to: "/withdraw-requests" },
+  { key: "depositCount", label: "Manual Deposit Count", Icon: Receipt, to: "/deposit-requests" },
+  { key: "withdrawCount", label: "Manual Withdraw Count", Icon: Receipt, to: "/withdraw-requests" },
+  { key: "pendingDeposit", label: "Pending Manual Deposit", Icon: Clock, to: "/deposit-requests" },
+  { key: "pendingWithdraw", label: "Pending Manual Withdraw", Icon: Clock, to: "/withdraw-requests" },
+  { key: "autoDeposit", label: "Auto Deposit", Icon: Zap, money: true, to: "/auto-deposit-history" },
+  { key: "autoWithdraw", label: "Auto Withdraw", Icon: Zap, money: true, to: "/auto-withdraw-history" },
+  { key: "autoDepositCount", label: "Auto Deposit Count", Icon: Receipt, to: "/auto-deposit-history" },
+  { key: "autoWithdrawCount", label: "Auto Withdraw Count", Icon: Receipt, to: "/auto-withdraw-history" },
+  { key: "pendingAutoDeposit", label: "Pending Auto Deposit", Icon: Clock, to: "/auto-deposit-history", alert: true },
+  { key: "pendingAutoWithdraw", label: "Pending Auto Withdraw", Icon: Clock, to: "/auto-withdraw-history", alert: true },
+  { key: "mfsDeposit", label: "Personal Auto Deposit", Icon: Zap, money: true, to: "/mfs-deposit-history" },
+  { key: "mfsDepositCount", label: "Personal Auto Deposit Count", Icon: Receipt, to: "/mfs-deposit-history" },
+  { key: "pendingMfsDeposit", label: "Personal Auto Deposit Review", Icon: Clock, to: "/mfs-deposit-history", alert: true },
 ];
 
 const cardCls =
@@ -120,6 +133,7 @@ const Dashboard = () => {
       setLoading(true);
       const res = await api.get("/api/dashboard/summary");
       setSummary(res?.data?.data || null);
+      refreshPending();
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to load dashboard");
     } finally {
@@ -131,7 +145,25 @@ const Dashboard = () => {
     try {
       setTodayLoading(true);
       const res = await api.get("/api/dashboard/today", { params: { date: dateStr } });
-      setToday(res?.data?.data?.cards || null);
+      // অটোর দিনের হিসাব আলাদা কার্ডে
+      const d = res?.data?.data || {};
+      const a = d.auto || {};
+      setToday(
+        d.cards
+          ? {
+              ...d.cards,
+              autoDeposit: a.deposit?.total || 0,
+              autoDepositCount: a.deposit?.count || 0,
+              pendingAutoDeposit: a.deposit?.pending || 0,
+              autoWithdraw: a.withdraw?.total || 0,
+              autoWithdrawCount: a.withdraw?.count || 0,
+              pendingAutoWithdraw: a.withdraw?.pending || 0,
+              mfsDeposit: d.mfs?.deposit?.total || 0,
+              mfsDepositCount: d.mfs?.deposit?.count || 0,
+              pendingMfsDeposit: d.mfs?.deposit?.pending || 0,
+            }
+          : null,
+      );
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to load day summary");
     } finally {
@@ -148,6 +180,19 @@ const Dashboard = () => {
   }, [selectedDate]);
 
   const cards = useMemo(() => summary?.cards || {}, [summary]);
+  const auto = summary?.auto || null;
+  const pending = usePending();
+  // মেনুর key → নাম আর পথ (navigation থেকে, তাই নাম এক জায়গাতেই)
+  const pendingList = useMemo(() => {
+    const flat = navItems.flatMap((item) => (item.children?.length ? item.children : [item]));
+    return Object.entries(pending)
+      .filter(([, n]) => n > 0)
+      .map(([key, count]) => {
+        const nav = flat.find((x) => x.key === key);
+        return nav ? { key, count, label: nav.label, path: nav.path } : null;
+      })
+      .filter(Boolean);
+  }, [pending]);
 
   const activeUsers = Number(cards.activeUsers || 0);
   const inactiveUsers = Math.max(0, Number(cards.allUsers || 0) - activeUsers);
@@ -218,6 +263,24 @@ const Dashboard = () => {
         </div>
 
         <div className="space-y-8 p-4 md:p-6 lg:p-8">
+          {/* ── অপেক্ষমাণ কাজ — যেখানে admin এর হাত লাগবে, এক সারিতে, জ্বলে-নেভে ── */}
+          {pendingList.length > 0 && (
+            <div className="ad-pending-card flex flex-wrap items-center gap-2 rounded-[18px] border bg-[#ef4444]/10 p-4">
+              <span className="me-2 text-[14px] font-bold text-[#ef4444]">Waiting for you:</span>
+              {pendingList.map((row) => (
+                <button
+                  key={row.key}
+                  type="button"
+                  onClick={() => navigate(row.path)}
+                  className="flex cursor-pointer items-center gap-2 rounded-full border border-[#ef4444]/50 bg-[var(--neutral900)] px-3 py-1.5 text-[13px] font-semibold text-[var(--neutral100)] transition hover:border-[#ef4444]"
+                >
+                  {row.label}
+                  <PendingBadge count={row.count} />
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* ── সারসংক্ষেপ কার্ড ── */}
           <div className="grid grid-cols-2 gap-4 md:gap-5 xl:grid-cols-4">
             {SUMMARY_CARDS.map((card) => {
@@ -226,17 +289,18 @@ const Dashboard = () => {
                 : card.money
                   ? money(cards[card.key])
                   : format(cards[card.key]);
+              const waiting = card.pending ? pending[card.pending] || 0 : 0;
 
               return (
                 <button
                   key={card.key}
                   type="button"
                   onClick={() => navigate(card.to)}
-                  className={cardCls}
+                  className={`${cardCls} ${waiting > 0 ? "ad-pending-card" : ""}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="min-w-0 text-[14px] font-medium text-[var(--text-muted)]">
-                      {card.label}
+                      {card.label} <PendingBadge count={waiting} />
                     </p>
                     <IconBox size={52}>
                       <card.Icon size={22} />
@@ -247,6 +311,54 @@ const Dashboard = () => {
                   </h3>
                   <div className="mt-5 text-[12px] text-[var(--primary500)]">
                     Click to open
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── অটো জমা / অটো উত্তোলন — আলাদা হিসাব, অপেক্ষমাণ থাকলে লাল জ্বলে ── */}
+          <div className="grid gap-4 md:gap-5 lg:grid-cols-2 2xl:grid-cols-3">
+            {[
+              { key: "deposit", title: "Auto Deposit", Icon: ArrowDownToLine, to: "/auto-deposit-history", pendingKey: "auto-deposit-history", pendingHint: "waiting for your confirmation", data: auto?.deposit },
+              { key: "withdraw", title: "Auto Withdraw", Icon: ArrowUpFromLine, to: "/auto-withdraw-history", pendingKey: "auto-withdraw-history", pendingHint: "pending or processing", data: auto?.withdraw },
+              // পার্সোনাল অটো ডিপোজিট (MFSWallet) — "Pending" = গেটওয়ে মেলাতে পারেনি, admin এর যাচাই
+              { key: "mfs", title: "Personal Auto Deposit", Icon: ArrowDownToLine, to: "/mfs-deposit-history", pendingKey: "mfs-deposit-history", pendingHint: "need your review", data: summary?.mfs?.deposit },
+            ].map((box) => {
+              const d = box.data || {};
+              const waiting = pending[box.pendingKey] ?? d.pending ?? 0;
+              return (
+                <button
+                  key={box.key}
+                  type="button"
+                  onClick={() => navigate(box.to)}
+                  className={`${cardCls} ${waiting > 0 ? "ad-pending-card" : ""}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Zap size={16} className="text-[var(--primary500)]" />
+                      <p className="text-[15px] font-bold text-[var(--neutral100)]">{box.title}</p>
+                      <PendingBadge count={waiting} />
+                    </div>
+                    <IconBox size={52}>
+                      <box.Icon size={22} />
+                    </IconBox>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[
+                      ["Total", loading ? "—" : money(d.total)],
+                      ["Successful", loading ? "—" : format(d.count)],
+                      ["Today", loading ? "—" : money(d.today)],
+                      ["Pending", loading ? "—" : format(waiting)],
+                    ].map(([label, value]) => (
+                      <div key={label} className="min-w-0">
+                        <p className="text-[12px] text-[var(--text-muted)]">{label}</p>
+                        <p className={`truncate text-[18px] font-black ${label === "Pending" && waiting > 0 ? "text-[#ef4444]" : "text-[var(--neutral100)]"}`}>{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 text-[12px] text-[var(--primary500)]">
+                    {waiting > 0 ? `${waiting} ${box.pendingHint} — click to open` : "Click to open"}
                   </div>
                 </button>
               );
@@ -290,18 +402,20 @@ const Dashboard = () => {
                   : card.money
                     ? money(today?.[card.key])
                     : format(today?.[card.key]);
+                // সেই দিনের অপেক্ষমাণ (ম্যানুয়াল/অটো) থাকলে লাল জ্বলে
+                const waiting = /^pending/i.test(card.key) && !todayLoading ? Number(today?.[card.key] || 0) : 0;
 
                 return (
                   <button
                     key={card.key}
                     type="button"
                     onClick={() => navigate(card.to)}
-                    className="cursor-pointer rounded-[20px] border border-white/[0.06] bg-[var(--neutral800)] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--primary500)]/50"
+                    className={`cursor-pointer rounded-[20px] border border-white/[0.06] bg-[var(--neutral800)] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--primary500)]/50 ${waiting > 0 ? "ad-pending-card" : ""}`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[13px] text-[var(--text-muted)]">
-                          {card.label}
+                          {card.label} <PendingBadge count={waiting} />
                         </p>
                         <h3 className="mt-2 text-[20px] font-black text-[var(--neutral100)]">
                           {value}

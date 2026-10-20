@@ -7,7 +7,11 @@ import User from "../models/User.js";
 import DepositRequest from "../models/DepositRequest.js";
 import WithdrawRequest from "../models/WithdrawRequest.js";
 import AutoDeposit from "../models/AutoDeposit.js";
+import MfsDeposit from "../models/MfsDeposit.js";
 import AutoWithdraw from "../models/AutoWithdraw.js";
+import { AffWithdrawRequest } from "../models/AffWithdraw.js";
+import Verification from "../models/Verification.js";
+import Feedback from "../models/Feedback.js";
 
 /**
  * ড্যাশবোর্ড — `/api/dashboard`। সব সংখ্যা আসল ডেটাবেস থেকে, ম্যানুয়াল আর
@@ -38,6 +42,8 @@ const bdKey = (date) => new Date(date.getTime() + BD_MS).toISOString().slice(0, 
 const DONE = {
   manualDeposit: { Model: DepositRequest, match: { status: "approved" }, at: "approvedAt" },
   autoDeposit: { Model: AutoDeposit, match: { status: "PAID" }, at: "paidAt" },
+  // পার্সোনাল অটো ডিপোজিট (MFSWallet)
+  mfsDeposit: { Model: MfsDeposit, match: { status: "PAID" }, at: "paidAt" },
   manualWithdraw: { Model: WithdrawRequest, match: { status: "approved" }, at: "approvedAt" },
   autoWithdraw: { Model: AutoWithdraw, match: { status: "COMPLETED" }, at: "completedAt" },
 };
@@ -65,7 +71,14 @@ router.get("/summary", protectAdmin, async (req, res) => {
     const today = bdDayStart();
     const since = new Date(today.getTime() - 6 * 24 * 3600 * 1000);
 
+    const today0 = today;
     const [
+      mfToday,
+      pendingMfsDeposit,
+      mf,
+      mfDays,
+      adToday,
+      awToday,
       allUsers,
       activeUsers,
       allAffiliateUsers,
@@ -84,6 +97,13 @@ router.get("/summary", protectAdmin, async (req, res) => {
       mwDays,
       awDays,
     ] = await Promise.all([
+      totalOf(DONE.mfsDeposit, { $gte: today0 }),
+      // শুধু যেগুলো গেটওয়ে নিজে মেলাতে পারেনি — admin এর যাচাইয়ের অপেক্ষায়
+      MfsDeposit.countDocuments({ status: "PENDING", needsReview: true }),
+      totalOf(DONE.mfsDeposit),
+      byDay(DONE.mfsDeposit, since),
+      totalOf(DONE.autoDeposit, { $gte: today0 }),
+      totalOf(DONE.autoWithdraw, { $gte: today0 }),
       User.countDocuments({ role: "user" }),
       User.countDocuments({ role: "user", isActive: true }),
       User.countDocuments({ role: "aff-user" }),
@@ -112,31 +132,79 @@ router.get("/summary", protectAdmin, async (req, res) => {
       return {
         day: new Date(start.getTime() + BD_MS).toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }),
         date: key,
-        deposit: money((mdDays[key] || 0) + (adDays[key] || 0)),
+        deposit: money((mdDays[key] || 0) + (adDays[key] || 0) + (mfDays[key] || 0)),
         withdraw: money((mwDays[key] || 0) + (awDays[key] || 0)),
       };
     });
 
     return successResponse(res, "Dashboard summary loaded", {
+      // ম্যানুয়াল আর অটো আলাদা — অটোর নিজের কার্ড (`auto`)
       cards: {
         allUsers,
         activeUsers,
         allAffiliateUsers,
-        allDepositBalances: money(md.total + ad.total),
-        pendingDepositRequest: pendingDeposit + pendingAutoDeposit,
-        allWithdrawBalances: money(mw.total + aw.total),
-        pendingWithdrawRequest: pendingWithdraw + pendingAutoWithdraw,
+        allDepositBalances: md.total,
+        pendingDepositRequest: pendingDeposit,
+        allWithdrawBalances: mw.total,
+        pendingWithdrawRequest: pendingWithdraw,
         totalUserBalance: money(balanceRows[0]?.total),
         totalAdmins,
+      },
+      auto: {
+        deposit: { total: ad.total, count: ad.n, today: adToday.total, todayCount: adToday.n, pending: pendingAutoDeposit },
+        withdraw: { total: aw.total, count: aw.n, today: awToday.total, todayCount: awToday.n, pending: pendingAutoWithdraw },
+      },
+      // পার্সোনাল অটো ডিপোজিট (MFSWallet) — নিজের কার্ড
+      mfs: {
+        deposit: { total: mf.total, count: mf.n, today: mfToday.total, todayCount: mfToday.n, pending: pendingMfsDeposit },
       },
       // কোন ধরনে কত — প্যানেল চাইলে আলাদা করে দেখাতে পারে
       split: {
         manualDeposit: md.total,
         autoDeposit: ad.total,
+        mfsDeposit: mf.total,
         manualWithdraw: mw.total,
         autoWithdraw: aw.total,
       },
       chart,
+    });
+  } catch (error) {
+    return errorResponse(res, error.message, 500);
+  }
+});
+
+/**
+ * অপেক্ষমাণ কাজ — সাইডবার আর ড্যাশবোর্ডের লাল ব্যাজ। key = admin এর মেনুর key।
+ * অটো জমা: শুধু যেগুলোয় গেটওয়ে তথ্য পাঠিয়েছে (admin এর নিশ্চিতের অপেক্ষায়)।
+ */
+router.get("/pending", protectAdmin, async (req, res) => {
+  try {
+    const [mfsDeposit, deposit, autoDeposit, withdraw, autoWithdraw, affWithdraw, verifyUser, verifyAff, affiliates, feedback] = await Promise.all([
+      MfsDeposit.countDocuments({ status: "PENDING", needsReview: true }),
+      DepositRequest.countDocuments({ status: "pending" }),
+      AutoDeposit.countDocuments({ status: "PENDING", transactionId: { $ne: "" } }),
+      WithdrawRequest.countDocuments({ status: "pending" }),
+      AutoWithdraw.countDocuments({ status: { $in: ["PENDING", "PROCESSING"] } }),
+      AffWithdrawRequest.countDocuments({ status: "pending" }),
+      Verification.countDocuments({ role: "user", status: "pending" }),
+      Verification.countDocuments({ role: "aff-user", status: "pending" }),
+      User.countDocuments({ role: "aff-user", affiliateStatus: "pending" }),
+      Feedback.countDocuments({ status: "new" }),
+    ]);
+    res.set("Cache-Control", "no-store");
+    return successResponse(res, "Pending counts", {
+      counts: {
+        "deposit-requests": deposit,
+        "auto-deposit-history": autoDeposit,
+        "mfs-deposit-history": mfsDeposit,
+        "withdraw-requests": withdraw,
+        "auto-withdraw-history": autoWithdraw,
+        "aff-withdraw-requests": affWithdraw,
+        verification: verifyUser,
+        "affiliate-verification": verifyAff,
+        affiliates,
+        feedback,
+      },
     });
   } catch (error) {
     return errorResponse(res, error.message, 500);
@@ -153,7 +221,9 @@ router.get("/today", protectAdmin, async (req, res) => {
     const end = new Date(start.getTime() + 24 * 3600 * 1000);
     const range = { $gte: start, $lt: end };
 
-    const [newUsers, newAffiliates, md, ad, mw, aw, pendingDeposit, pendingAutoDeposit, pendingWithdraw, pendingAutoWithdraw] = await Promise.all([
+    const [mf, pendingMfsDeposit, newUsers, newAffiliates, md, ad, mw, aw, pendingDeposit, pendingAutoDeposit, pendingWithdraw, pendingAutoWithdraw] = await Promise.all([
+      totalOf(DONE.mfsDeposit, range),
+      MfsDeposit.countDocuments({ status: "PENDING", needsReview: true, createdAt: range }),
       User.countDocuments({ role: "user", createdAt: range }),
       User.countDocuments({ role: "aff-user", createdAt: range }),
       totalOf(DONE.manualDeposit, range),
@@ -171,12 +241,20 @@ router.get("/today", protectAdmin, async (req, res) => {
       cards: {
         newUsers,
         newAffiliates,
-        deposit: money(md.total + ad.total),
-        withdraw: money(mw.total + aw.total),
-        depositCount: md.n + ad.n,
-        withdrawCount: mw.n + aw.n,
-        pendingDeposit: pendingDeposit + pendingAutoDeposit,
-        pendingWithdraw: pendingWithdraw + pendingAutoWithdraw,
+        // ম্যানুয়াল — অটোর দিনের হিসাব `auto` এ আলাদা
+        deposit: md.total,
+        withdraw: mw.total,
+        depositCount: md.n,
+        withdrawCount: mw.n,
+        pendingDeposit,
+        pendingWithdraw,
+      },
+      auto: {
+        deposit: { total: ad.total, count: ad.n, pending: pendingAutoDeposit },
+        withdraw: { total: aw.total, count: aw.n, pending: pendingAutoWithdraw },
+      },
+      mfs: {
+        deposit: { total: mf.total, count: mf.n, pending: pendingMfsDeposit },
       },
     });
   } catch (error) {

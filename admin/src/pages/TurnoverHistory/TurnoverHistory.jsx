@@ -30,6 +30,7 @@ const SOURCES = [
   { key: "all", label: "Every source" },
   { key: "deposit", label: "Deposit" },
   { key: "auto-deposit", label: "Auto deposit" },
+  { key: "mfs-deposit", label: "Personal auto deposit" },
   { key: "admin-manual-deposit", label: "Manual deposit" },
   { key: "register-bonus", label: "Register bonus" },
 ];

@@ -4,12 +4,13 @@ import api from "../../api/axios";
 
 /**
  * ডিপোজিট বা উত্তোলনের কোন পথ খোলা — `/api/payment-modes`।
- * `{ loading, manual, auto }`; জানা না গেলে দুটোই বন্ধ ধরে নেওয়া হয়
+ * `{ loading, manual, auto, mfs, mfsName }` (mfs = পার্সোনাল অটো ডিপোজিট, শুধু জমায়);
+ * জানা না গেলে সব বন্ধ ধরে নেওয়া হয়
  * না — ম্যানুয়াল খোলা ধরা হয়, যাতে সার্ভারের এক মুহূর্তের ভুলে পুরো
  * ডিপোজিট "বন্ধ" না দেখায় (ম্যানুয়াল সত্যিই বন্ধ থাকলে জমার সময় সার্ভার আটকায়)।
  */
 export const usePaymentModes = (kind) => {
-  const [state, setState] = useState({ loading: true, manual: false, auto: false });
+  const [state, setState] = useState({ loading: true, manual: false, auto: false, mfs: false, mfsName: null });
 
   useEffect(() => {
     let alive = true;
@@ -17,9 +18,9 @@ export const usePaymentModes = (kind) => {
       .get("/api/payment-modes")
       .then(({ data }) => {
         const modes = data?.data?.[kind] || {};
-        if (alive) setState({ loading: false, manual: Boolean(modes.manual), auto: Boolean(modes.auto) });
+        if (alive) setState({ loading: false, manual: Boolean(modes.manual), auto: Boolean(modes.auto), mfs: Boolean(modes.mfs), mfsName: modes.mfsName || null });
       })
-      .catch(() => alive && setState({ loading: false, manual: true, auto: false }));
+      .catch(() => alive && setState({ loading: false, manual: true, auto: false, mfs: false, mfsName: null }));
     return () => {
       alive = false;
     };
@@ -54,3 +55,20 @@ export const autoDepositRow = (row) => ({
   approvedAt: row.paidAt,
   adminNote: row.reviewNote || "",
 });
+
+/** পার্সোনাল অটো ডিপোজিটের (MFSWallet) সারি → ম্যানুয়াল আবেদনের রূপ */
+const MFS_NAME = { bkash: ["বিকাশ", "bKash"], nagad: ["নগদ", "Nagad"], rocket: ["রকেট", "Rocket"], upay: ["উপায়", "Upay"] };
+export const mfsDepositRow = (row) => {
+  const [bn, en] = MFS_NAME[row.method] || [row.method, row.method];
+  return {
+    ...row,
+    auto: true,
+    status: DEP_STATUS[row.status] || "pending",
+    methodId: String(row.method || "").toUpperCase(),
+    display: { methodName: { bn: `পার্সোনাল অটো ${bn}`, en: `Personal auto ${en}` } },
+    calc: { ...row.calc, totalBonus: row.calc?.bonusAmount || 0 },
+    trxId: row.transactionId || "",
+    approvedAt: row.paidAt,
+    adminNote: row.reviewNote || "",
+  };
+};

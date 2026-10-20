@@ -11,6 +11,7 @@ import AuthModal from "../components/AuthModal/AuthModal";
 import MemberModal from "../components/MemberModal/MemberModal";
 import NoticeModal from "../components/NoticeModal/NoticeModal";
 import HomeEvents from "../components/HomeEvents/HomeEvents";
+import MfsReturnNotice from "../features/deposit/MfsReturnNotice";
 import { SpriteLoader } from "../components/Icon/Icon";
 import AppDownloadModal from "../components/AppDownloadModal/AppDownloadModal";
 import { UIContext } from "../Context/uiContext";
@@ -341,6 +342,9 @@ const RootLayout = () => {
         )}
 
         {downloadOpen && <AppDownloadModal onClose={() => setDownloadOpen(false)} />}
+
+        {/* পার্সোনাল অটো ডিপোজিটের পেমেন্ট পাতা থেকে ফেরা — ফলাফল জানানো */}
+        <MfsReturnNotice />
 
         {/* ভাসমান ইভেন্ট আইকন (admin এর "Home Events") — খেলার পাতায় নয় */}
         {!isGameCenter && <HomeEvents />}

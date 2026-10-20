@@ -37,13 +37,19 @@ const router = express.Router();
 const text = (value) => String(value ?? "").trim();
 const isId = (value) => mongoose.Types.ObjectId.isValid(String(value));
 const langText = (input = {}) => ({ bn: text(input?.bn), en: text(input?.en) });
-const sameKey = (a, b) => {
+
+/** "100, 300, 500" বা [100, 300] → ছোট থেকে বড় ধনাত্মক অঙ্ক (সর্বোচ্চ ১২টা) */
+export const amountsOf = (value) => {
+  const list = Array.isArray(value) ? value : String(value ?? "").split(/[\s,]+/);
+  return [...new Set(list.map(Number).filter((n) => Number.isFinite(n) && n > 0))].sort((a, b) => a - b).slice(0, 12);
+};
+export const sameKey = (a, b) => {
   const x = Buffer.from(String(a || ""));
   const y = Buffer.from(String(b || ""));
   return x.length > 0 && x.length === y.length && crypto.timingSafeEqual(x, y);
 };
 
-const cleanProviders = (list) =>
+export const cleanProviders = (list) =>
   (Array.isArray(list) ? list : [])
     .map((item) => ({
       providerCode: text(item?.providerCode).toUpperCase(),
@@ -70,7 +76,7 @@ const cleanMethods = (list) => {
 };
 
 /** বেছে নেওয়া বোনাস থেকে টাকার হিসাব */
-const computeBonus = ({ amount, bonus }) => {
+export const computeBonus = ({ amount, bonus }) => {
   if (!bonus) {
     return {
       selectedBonus: {},

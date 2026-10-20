@@ -384,6 +384,7 @@ export const locale = {
           "register-bonus": "নিবন্ধন বোনাস",
           "deposit": "জমা বোনাস",
           "auto-deposit": "জমা বোনাস",
+          "mfs-deposit": "জমা বোনাস",
           "admin-manual-deposit": "জমা",
           "reward": "পুরস্কার"
         },
@@ -590,6 +591,13 @@ export const locale = {
       "manualDepositHint": "এজেন্টের নম্বরে টাকা পাঠিয়ে TrxID দিয়ে জমা দিন — যাচাইয়ের পর ব্যালেন্সে যোগ হবে",
       "autoDeposit": "অটো ডিপোজিট",
       "autoDepositHint": "পেমেন্ট পাতায় সরাসরি পরিশোধ করুন — টাকা সাথে সাথে ব্যালেন্সে যোগ হয়",
+      "mfsDeposit": "পার্সোনাল অটো ডিপোজিট",
+      "mfsDepositHint": "বিকাশ / নগদ / রকেট / উপায় বেছে পেমেন্ট পাতায় টাকা পাঠান — যাচাইয়ের সাথে সাথে ব্যালেন্সে যোগ হয়",
+      "chooseMethod": "মাধ্যম বেছে নিন",
+      "mfsNote": "যে মাধ্যম বেছে নেবেন সেটা দিয়েই পেমেন্ট পাতায় টাকা পাঠান। টাকা যাচাই হলে নিজে থেকেই ব্যালেন্সে যোগ হবে।",
+      "returnSuccess": "পেমেন্ট সফল — ৳{amount} আপনার ব্যালেন্সে যোগ হয়েছে",
+      "returnWaiting": "পেমেন্ট যাচাই হচ্ছে — নিশ্চিত হলেই ৳{amount} ব্যালেন্সে যোগ হবে",
+      "returnFail": "পেমেন্ট সম্পন্ন হয়নি — টাকা কাটা গিয়ে থাকলে গ্রাহক সেবায় যোগাযোগ করুন",
       "manualWithdraw": "ম্যানুয়াল উত্তোলন",
       "manualWithdrawHint": "আবেদন যাচাইয়ের পর আপনার ই-ওয়ালেটে টাকা পাঠানো হবে",
       "autoWithdraw": "অটো উত্তোলন",
@@ -625,6 +633,7 @@ export const locale = {
         "autoOff": "অটো এখন বন্ধ আছে",
         "manualOff": "ম্যানুয়াল এখন বন্ধ আছে",
         "firstOnly": "এই বোনাস শুধু প্রথম অটো ডিপোজিটে",
+        "chooseMethod": "আগে একটি মাধ্যম বেছে নিন",
         "bonusOff": "এই বোনাস এখন নেই",
         "autoMethodOff": "অটো উত্তোলন এই ই-ওয়ালেট সমর্থন করে না"
       }
@@ -1410,6 +1419,7 @@ export const locale = {
           "register-bonus": "Register bonus",
           "deposit": "Deposit bonus",
           "auto-deposit": "Deposit bonus",
+          "mfs-deposit": "Deposit bonus",
           "admin-manual-deposit": "Deposit",
           "reward": "Reward"
         },
@@ -1614,6 +1624,13 @@ export const locale = {
       "manualDepositHint": "Send money to the agent number and submit the TrxID — added to your balance after review",
       "autoDeposit": "Auto deposit",
       "autoDepositHint": "Pay directly on the payment page — money reaches your balance instantly",
+      "mfsDeposit": "Personal Auto Deposit",
+      "mfsDepositHint": "Pick bKash / Nagad / Rocket / Upay and send money on the payment page — credited as soon as it is verified",
+      "chooseMethod": "Choose a method",
+      "mfsNote": "Send the money on the payment page with the method you picked. It reaches your balance by itself once verified.",
+      "returnSuccess": "Payment successful — ৳{amount} added to your balance",
+      "returnWaiting": "Payment is being verified — ৳{amount} will be added once confirmed",
+      "returnFail": "Payment was not completed — if money left your account, contact customer service",
       "manualWithdraw": "Manual withdraw",
       "manualWithdrawHint": "After review, the money is sent to your e-wallet",
       "autoWithdraw": "Auto withdraw",
@@ -1649,6 +1666,7 @@ export const locale = {
         "autoOff": "Auto is off right now",
         "manualOff": "Manual is off right now",
         "firstOnly": "This bonus is only for the first auto deposit",
+        "chooseMethod": "Choose a method first",
         "bonusOff": "This bonus is not available now",
         "autoMethodOff": "Auto withdraw does not support this e-wallet"
       }

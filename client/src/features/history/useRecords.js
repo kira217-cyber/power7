@@ -5,7 +5,7 @@ import api from "../../api/axios";
 import { selectIsLoggedIn } from "../auth/authSelectors";
 import { notify } from "../../utils/notify";
 import { rangeOf } from "./dateRange";
-import { autoDepositRow, autoWithdrawRow } from "../payment/usePaymentModes";
+import { autoDepositRow, autoWithdrawRow, mfsDepositRow } from "../payment/usePaymentModes";
 
 /**
  * রেকর্ডের ডেটা — অ্যাকাউন্ট রেকর্ড (টাকার খাতা), লাভ-ক্ষতি, আর মোবাইলের
@@ -87,13 +87,17 @@ export const useRequestRecords = ({ kind, range, enabled = true }) =>
       const url = kind === "withdraw" ? "/api/withdraw-requests/my" : "/api/deposit-requests/my";
       // অটো লেনদেনও একই তালিকায় — একই রূপে এনে সময় ধরে সাজানো
       const autoUrl = kind === "withdraw" ? "/api/auto-withdraw/history/my" : "/api/auto-deposit/history/my";
-      const [{ data }, auto] = await Promise.all([
+      const [{ data }, auto, mfs] = await Promise.all([
         api.get(url, { params: { limit: 100 } }),
         api.get(autoUrl, { params: { limit: 100 } }).catch(() => null),
+        // পার্সোনাল অটো ডিপোজিট (MFSWallet) — শুধু জমায়
+        kind === "withdraw" ? null : api.get("/api/mfs-deposit/history/my", { params: { limit: 100 } }).catch(() => null),
       ]);
       const autoRows = kind === "withdraw" ? (auto?.data?.data?.withdrawals || []).map(autoWithdrawRow) : (auto?.data?.data?.deposits || []).map(autoDepositRow);
+      // খুলে ফেলে রাখা পেমেন্ট পাতা (কিছু আসেনি) রেকর্ডে আনা হয় না — শুধু যেগুলোয় কিছু ঘটেছে
+      const mfsRows = (mfs?.data?.data?.deposits || []).filter((r) => r.status !== "PENDING" || r.needsReview).map(mfsDepositRow);
       const { from, to } = rangeOf(range);
-      const rows = [...(data?.data?.requests || data?.data?.rows || []), ...autoRows]
+      const rows = [...(data?.data?.requests || data?.data?.rows || []), ...autoRows, ...mfsRows]
         .filter((r) => {
           const at = new Date(r.createdAt);
           return at >= from && at <= to;

@@ -33,6 +33,7 @@ const turnOverSchema = new mongoose.Schema(
         "register-bonus",
         "deposit",
         "auto-deposit",
+        "mfs-deposit",
         "admin-manual-deposit",
         "reward",
       ],

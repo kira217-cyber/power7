@@ -2,11 +2,11 @@ import express from "express";
 
 import BalanceLog from "../models/BalanceLog.js";
 import GameHistory from "../models/GameHistory.js";
-import DepositRequest from "../models/DepositRequest.js";
 import WithdrawRequest from "../models/WithdrawRequest.js";
 import { protectUser } from "../middleware/protectUser.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 import { num, money } from "../utils/money.js";
+import { depositsByDay } from "../utils/depositSources.js";
 
 /**
  * খেলোয়াড়ের "অ্যাকাউন্ট রেকর্ড" আর "লাভ ও ক্ষতি" (মূল সাইটের মতো)।
@@ -109,10 +109,7 @@ router.get("/profit-loss/my", protectUser, async (req, res) => {
         { $group: { _id: dayOf("createdAt"), bet: { $sum: "$betAmount" }, win: { $sum: "$winAmount" } } },
       ]),
       allTab
-        ? DepositRequest.aggregate([
-            { $match: { user: req.user._id, status: "approved", approvedAt: range } },
-            { $group: { _id: dayOf("approvedAt"), deposit: { $sum: "$amount" } } },
-          ])
+        ? depositsByDay(req.user._id, range, dayOf)
         : [],
       allTab
         ? WithdrawRequest.aggregate([

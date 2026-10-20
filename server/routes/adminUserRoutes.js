@@ -21,6 +21,8 @@ import { successResponse, errorResponse } from "../utils/response.js";
 import { num, money } from "../utils/money.js";
 import { normalizeCountryCode, normalizePhone } from "../utils/phone.js";
 import { creditUser, writeLogs } from "../utils/wallet.js";
+import { sumDeposits } from "../utils/depositSources.js";
+import MfsDeposit from "../models/MfsDeposit.js";
 
 /**
  * admin এর Users / Affiliates পেজ — তালিকা, বিস্তারিত, ইতিহাস, বদলানো।
@@ -157,10 +159,8 @@ const oneUser = async (req, res, role) => {
       .limit(10)
       .lean(),
     TurnOver.find({ user: user._id }).sort({ createdAt: -1 }).limit(10).lean(),
-    DepositRequest.aggregate([
-      { $match: { user: new mongoose.Types.ObjectId(user._id), status: "approved" } },
-      { $group: { _id: null, n: { $sum: 1 }, sum: { $sum: "$calc.creditedAmount" } } },
-    ]),
+    // ম্যানুয়াল + অটো + পার্সোনাল অটো
+    sumDeposits(user._id).then((d) => [{ n: d.count, sum: d.credited }]),
   ]);
 
   return successResponse(res, "User loaded", {
@@ -372,6 +372,21 @@ router.get("/:id/history/auto-deposits", protectAdmin, requireAccountPermission,
   try {
     return await historyPage(req, res, AutoDeposit, {
       searchFields: ["invoiceNumber"],
+      totals: {
+        amount: "amount",
+        bonus: "calc.bonusAmount",
+        credited: "calc.creditedAmount",
+      },
+    });
+  } catch (error) {
+    return errorResponse(res, error.message, 500);
+  }
+});
+
+router.get("/:id/history/mfs-deposits", protectAdmin, requireAccountPermission, async (req, res) => {
+  try {
+    return await historyPage(req, res, MfsDeposit, {
+      searchFields: ["invoiceNumber", "shortCode", "transactionId"],
       totals: {
         amount: "amount",
         bonus: "calc.bonusAmount",

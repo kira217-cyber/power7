@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSearchParams } from "react-router";
-import { ChevronRight, Headset, Wallet, Zap } from "lucide-react";
+import { ChevronRight, Headset, Smartphone, Wallet, Zap } from "lucide-react";
 
 import { useIsDesktop } from "../../hook/useIsDesktop";
 import { useLanguage } from "../../Context/LanguageProvider";
@@ -12,15 +12,18 @@ import { getSupportUrl } from "../../data/contact";
 /**
  * ডিপোজিট / উত্তোলনের প্রথম ধাপ — কোন পথে।
  *
- *   ম্যানুয়াল + অটো দুটোই চালু → দুটো কার্ড, যেটায় চাপবেন সেই পাতা
- *   একটাই চালু                → সরাসরি সেই পাতা (কার্ড দেখায় না)
- *   কোনোটাই নয়                → "সাময়িকভাবে বন্ধ"
+ *   একাধিক পথ চালু → প্রতিটার কার্ড, যেটায় চাপবেন সেই পাতা
+ *   একটাই চালু     → সরাসরি সেই পাতা (কার্ড দেখায় না)
+ *   কোনোটাই নয়     → "সাময়িকভাবে বন্ধ"
+ *
+ * পথ: ম্যানুয়াল, অটো (OraclePay), আর জমায় পার্সোনাল অটো (MFSWallet, `mfs`) —
+ * admin যেটা চালু রাখেন সেটাই দেখায়।
  *
  * মোবাইলে বেছে নেওয়াটা ঠিকানায় (`?mode=auto`) — পেছনের তীর চাপলে আবার
  * কার্ডে ফেরে; ডেস্কটপ মডালে ঠিকানা নেই, তাই সেখানে state, আর পাতার
  * উপরে "পদ্ধতি বদলান"।
  *
- * `render(mode, onChange)` — `onChange` শুধু দুটো পথ খোলা থাকলে দেওয়া হয়।
+ * `render(mode, onChange)` — `onChange` শুধু একাধিক পথ খোলা থাকলে দেওয়া হয়।
  */
 
 const RED = "var(--member-accent, #ec2529)";
@@ -99,13 +102,16 @@ const Frame = ({ desktop, title, children }) =>
   );
 
 const PaymentModeGate = ({ kind, render }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const p = t.payMode;
   const desktop = useIsDesktop();
   const modes = usePaymentModes(kind);
   const [chosen, setChosen] = useMode();
   const isDeposit = kind === "deposit";
   const pageTitle = isDeposit ? t.money.depositTitle : t.money.withdrawTitle;
+  // খোলা পথগুলো, কার্ডের ক্রমে
+  const open = ["manual", "auto", ...(isDeposit ? ["mfs"] : [])].filter((key) => modes[key]);
+  const mfsTitle = (lang === "en" ? modes.mfsName?.en : modes.mfsName?.bn) || p.mfsDeposit;
 
   if (modes.loading) {
     return (
@@ -115,7 +121,7 @@ const PaymentModeGate = ({ kind, render }) => {
     );
   }
 
-  if (!modes.manual && !modes.auto) {
+  if (open.length === 0) {
     return (
       <Frame desktop={desktop} title={pageTitle}>
         <div className="flex flex-col items-center text-center" style={{ gap: desktop ? 14 : m(24), padding: desktop ? 0 : `${m(80)} 0` }}>
@@ -141,29 +147,22 @@ const PaymentModeGate = ({ kind, render }) => {
   }
 
   // একটাই খোলা — সরাসরি সেটা
-  if (!(modes.manual && modes.auto)) return render(modes.manual ? "manual" : "auto", null);
+  if (open.length === 1) return render(open[0], null);
 
-  // দুটোই খোলা — বেছে নেওয়া থাকলে সেটা, সাথে "পদ্ধতি বদলান"
-  if (chosen === "manual" || chosen === "auto") return render(chosen, () => setChosen(""));
+  // একাধিক খোলা — বেছে নেওয়া থাকলে সেটা, সাথে "পদ্ধতি বদলান"
+  if (open.includes(chosen)) return render(chosen, () => setChosen(""));
+
+  const CARDS = {
+    manual: { Icon: Wallet, color: "#f5a623", title: isDeposit ? p.manualDeposit : p.manualWithdraw, hint: isDeposit ? p.manualDepositHint : p.manualWithdrawHint },
+    auto: { Icon: Zap, color: RED, title: isDeposit ? p.autoDeposit : p.autoWithdraw, hint: isDeposit ? p.autoDepositHint : p.autoWithdrawHint },
+    mfs: { Icon: Smartphone, color: "#1e9bf0", title: mfsTitle, hint: p.mfsDepositHint },
+  };
 
   return (
     <Frame desktop={desktop} title={isDeposit ? p.depositChoose : p.withdrawChoose}>
-      <Card
-        desktop={desktop}
-        Icon={Wallet}
-        color="#f5a623"
-        title={isDeposit ? p.manualDeposit : p.manualWithdraw}
-        hint={isDeposit ? p.manualDepositHint : p.manualWithdrawHint}
-        onClick={() => setChosen("manual")}
-      />
-      <Card
-        desktop={desktop}
-        Icon={Zap}
-        color={RED}
-        title={isDeposit ? p.autoDeposit : p.autoWithdraw}
-        hint={isDeposit ? p.autoDepositHint : p.autoWithdrawHint}
-        onClick={() => setChosen("auto")}
-      />
+      {open.map((key) => (
+        <Card key={key} desktop={desktop} {...CARDS[key]} onClick={() => setChosen(key)} />
+      ))}
     </Frame>
   );
 };
