@@ -29,6 +29,7 @@ import ReferralRewards from "../pages/Referral/ReferralRewards";
 import RewardTemplates from "../pages/Rewards/RewardTemplates";
 import RewardTickets from "../pages/Rewards/RewardTickets";
 import SignInSetting from "../pages/Rewards/SignInSetting";
+import DailyBonus from "../pages/Rewards/DailyBonus";
 import VipLevels from "../pages/Vip/VipLevels";
 import VipSettings from "../pages/Vip/VipSettings";
 import VipHistory from "../pages/Vip/VipHistory";
@@ -109,6 +110,7 @@ const REAL_PAGES = {
   "/referral-rewards": <ReferralRewards />,
   "/reward-tickets": <RewardTemplates />,
   "/reward-signin": <SignInSetting />,
+  "/daily-bonus": <DailyBonus />,
   "/reward-history": <RewardTickets />,
   "/vip-levels": <VipLevels />,
   "/vip-settings": <VipSettings />,

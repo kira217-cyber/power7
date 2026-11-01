@@ -35,6 +35,7 @@ import siteContentRoutes from "./routes/siteContentRoutes.js";
 import inboxRoutes from "./routes/inboxRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import rewardRoutes from "./routes/rewardRoutes.js";
+import dailyBonusRoutes from "./routes/dailyBonusRoutes.js";
 import helpRoutes from "./routes/helpRoutes.js";
 import appRoutes from "./routes/appRoutes.js";
 import affiliateRoutes from "./routes/affiliateRoutes.js";
@@ -148,6 +149,7 @@ app.use("/api/inbox", inboxRoutes);
 // "অভিযোগ / পরামর্শ" — খেলোয়াড় পাঠান, admin উত্তর দেন (ইনবক্সে যায়)
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/rewards", rewardRoutes);
+app.use("/api/daily-bonus", dailyBonusRoutes);
 app.use("/api/help", helpRoutes);
 app.use("/api/app", appRoutes);
 app.use("/api/affiliate", affiliateRoutes);

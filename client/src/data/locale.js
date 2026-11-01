@@ -394,6 +394,31 @@ export const locale = {
       }
     },
 
+    dailyBonus: {
+      title: "ডেইলি বোনাস",
+      day: "দিন {n}",
+      today: "আজ",
+      claim: "দাবি করুন",
+      claimed: "পেয়েছেন",
+      missed: "মিস",
+      upcoming: "আসছে",
+      nextIn: "পরের বোনাস {t} পরে",
+      doneToday: "আজকের বোনাস নেওয়া হয়েছে",
+      off: "ডেইলি বোনাস এখন বন্ধ",
+      needDeposit: "দাবি করতে মোট ডিপোজিট কমপক্ষে ৳{n} লাগবে",
+      nothingToday: "আজ কোনো বোনাস নেই",
+      got: "দিন {n} এর ৳{a} বোনাস ব্যালেন্সে যোগ হয়েছে",
+      turnover: "তোলার আগে {x}× বাজি ধরতে হবে",
+      hint: "প্রতিদিন রাত ১২টার পর নতুন বোনাস। কোনো দিন না নিলে সেই দিনেরটা চলে যায়, পরের দিন পরের দিনেরটা পাবেন।",
+      rules: "নিয়ম",
+      err: {
+        dailyOff: "ডেইলি বোনাস এখন বন্ধ",
+        dailyClaimed: "আজকের বোনাস আগেই নেওয়া হয়েছে",
+        dailyNothing: "আজ কোনো বোনাস নেই",
+        dailyNeedDeposit: "দাবি করতে আগে ডিপোজিট করুন",
+        tooMany: "একটু পরে আবার চেষ্টা করুন",
+      },
+    },
     rewardFlow: {
       "coupon": "কুপন",
       "kinds": {
@@ -1429,6 +1454,31 @@ export const locale = {
       }
     },
 
+    dailyBonus: {
+      title: "Daily bonus",
+      day: "Day {n}",
+      today: "Today",
+      claim: "Claim",
+      claimed: "Claimed",
+      missed: "Missed",
+      upcoming: "Soon",
+      nextIn: "Next bonus in {t}",
+      doneToday: "Today's bonus is claimed",
+      off: "Daily bonus is off right now",
+      needDeposit: "A total deposit of at least ৳{n} is needed to claim",
+      nothingToday: "No bonus today",
+      got: "Day {n} bonus of ৳{a} added to your balance",
+      turnover: "Bet {x}× before withdrawing it",
+      hint: "A new bonus every day after 12 AM. Miss a day and that day's bonus is gone — the next day gives the next one.",
+      rules: "Rules",
+      err: {
+        dailyOff: "Daily bonus is off right now",
+        dailyClaimed: "Today's bonus is already claimed",
+        dailyNothing: "No bonus today",
+        dailyNeedDeposit: "Make a deposit first to claim",
+        tooMany: "Please try again in a moment",
+      },
+    },
     rewardFlow: {
       "coupon": "Coupon",
       "kinds": {

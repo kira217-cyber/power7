@@ -8,6 +8,7 @@ import { selectUser } from "../../../features/auth/authSelectors";
 import { useTickets } from "../../../features/reward/useRewards";
 import MemberShell, { EmptyState } from "../MemberShell";
 import { IMG, TicketCard, money, useTicketPopups } from "./RewardParts";
+import DailyBonus from "./DailyBonus";
 
 /**
  * "দাবি করা" — মূল সাইটের `/m/receivingCenter`।
@@ -52,6 +53,8 @@ const ClaimCenter = () => {
         </div>
 
         <div style={{ paddingTop: m(20) }}>
+          {/* ডেইলি বোনাস — টিকিটের উপরে (রেকর্ডে নয়) */}
+          {!history && <DailyBonus />}
           {loading ? null : tickets.length ? (
             tickets.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} history={history} onClaim={popups.open} onInfo={popups.info} />)
           ) : (

@@ -18,6 +18,7 @@ import {
   signInSetting,
   signInState,
 } from "../utils/reward.js";
+import { dailyBonusReady } from "../utils/dailyBonus.js";
 
 /**
  * পুরস্কার কেন্দ্র — `/api/rewards`।
@@ -51,14 +52,16 @@ const fail = (res, result) => errorResponse(res, result.code, 400, result.code);
 router.get("/summary", protectUser, async (req, res) => {
   try {
     await expireTickets(req.user._id);
-    const [byKind, sign] = await Promise.all([
+    const [byKind, sign, dailyReady] = await Promise.all([
       RewardTicket.aggregate([{ $match: { user: req.user._id, status: "available" } }, { $group: { _id: "$kind", n: { $sum: 1 } } }]),
       signInState(req.user._id),
+      dailyBonusReady(req.user),
     ]);
     const kinds = Object.fromEntries(byKind.map((k) => [k._id, k.n]));
-    const available = byKind.reduce((sum, k) => sum + k.n, 0);
+    // আজকের ডেইলি বোনাস বাকি থাকলে "দাবি করা" র ব্যাজে সেটাও একটা
+    const available = byKind.reduce((sum, k) => sum + k.n, 0) + (dailyReady ? 1 : 0);
     // kinds — হোমের ভাসমান আইকনের "টিকিট থাকলেই দেখাও" এর জন্য
-    return successResponse(res, "Reward summary", { available, kinds, claimedToday: sign.claimedToday, signInEnabled: sign.enabled });
+    return successResponse(res, "Reward summary", { available, kinds, dailyReady, claimedToday: sign.claimedToday, signInEnabled: sign.enabled });
   } catch (error) {
     return errorResponse(res, error.message, 500);
   }

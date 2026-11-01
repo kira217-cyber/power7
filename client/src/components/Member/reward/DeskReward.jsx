@@ -14,6 +14,7 @@ import { Drawer } from "../account/DeskDrawer";
 import { IMG, money, useTicketPopups, useTv } from "./RewardParts";
 import { SignInBody } from "./SignInPage";
 import { TemuHistoryBody } from "./TemuHistory";
+import DailyBonus from "./DailyBonus";
 
 /**
  * ডেস্কটপ মডালের "পুরস্কার কেন্দ্র" — মূল সাইটের মাপে (১১১০ × ৬২০):
@@ -226,9 +227,11 @@ const DeskReward = () => {
           </button>
         </div>
 
-        <div className="hide-scrollbar flex-1 overflow-y-auto">
+        <div className="hide-scrollbar flex flex-1 flex-col overflow-y-auto">
+          {/* ডেইলি বোনাস — টিকিটের উপরে */}
+          <DailyBonus desktop />
           {tickets.length === 0 ? (
-            <div className="grid h-full place-items-center" style={{ color: "var(--member-muted, #999)", fontSize: 13 }}>
+            <div className="grid flex-1 place-items-center" style={{ color: "var(--member-muted, #999)", fontSize: 13, minHeight: 120 }}>
               {t.member.desk.noMatch}
             </div>
           ) : (

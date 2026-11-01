@@ -281,6 +281,7 @@ export const navItems = [
       { key: "referral-rewards", path: "/referral-rewards", label: "Referral Rewards", icon: "History", perm: "referral-rewards" },
       { key: "reward-tickets", path: "/reward-tickets", label: "Reward Tickets", icon: "Ticket", perm: "rewards" },
       { key: "reward-signin", path: "/reward-signin", label: "Sign-in Setting", icon: "CalendarCheck", perm: "rewards" },
+      { key: "daily-bonus", path: "/daily-bonus", label: "Daily Bonus", icon: "Coins", perm: "rewards" },
       { key: "reward-history", path: "/reward-history", label: "Ticket History", icon: "History", perm: "rewards" },
     ],
   },
