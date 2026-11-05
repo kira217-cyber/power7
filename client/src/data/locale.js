@@ -659,6 +659,7 @@ export const locale = {
         "manualOff": "ম্যানুয়াল এখন বন্ধ আছে",
         "firstOnly": "এই বোনাস শুধু প্রথম অটো ডিপোজিটে",
         "chooseMethod": "আগে একটি মাধ্যম বেছে নিন",
+        "methodOff": "এই মাধ্যম এখন চালু নেই, অন্য মাধ্যম বেছে নিন",
         "bonusOff": "এই বোনাস এখন নেই",
         "autoMethodOff": "অটো উত্তোলন এই ই-ওয়ালেট সমর্থন করে না"
       }
@@ -1717,6 +1718,7 @@ export const locale = {
         "manualOff": "Manual is off right now",
         "firstOnly": "This bonus is only for the first auto deposit",
         "chooseMethod": "Choose a method first",
+        "methodOff": "This method is not available right now, please choose another",
         "bonusOff": "This bonus is not available now",
         "autoMethodOff": "Auto withdraw does not support this e-wallet"
       }

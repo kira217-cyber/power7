@@ -453,7 +453,7 @@ const AutoDepositHistory = () => {
                               </div>
                               <FieldRow k="Invoice" v={item.invoiceNumber || "—"} />
                               <FieldRow k="Deposit" v={money(item.amount)} />
-                              <FieldRow k="Method" v={item.bank || "—"} />
+                              <FieldRow k="Method" v={item.bank || item.method || "—"} />
                               <FieldRow k="Status" v={item.status || "—"} />
                               <FieldRow
                                 k="Paid At"

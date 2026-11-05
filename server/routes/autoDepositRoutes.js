@@ -26,6 +26,10 @@ import { notifyAdmin, taka } from "../utils/adminNotify.js";
  * আমরা PENDING লেনদেন বসিয়ে গেটওয়ে থেকে পেমেন্ট পাতার ঠিকানা আনি, গেটওয়ে
  * টাকা পেলে webhook এ COMPLETED পাঠায় আর তখন টাকা ঢোকে।
  *
+ * মাধ্যম (bKash, Nagad …) সাইটেই বাছা হয়, খেলোয়াড় সরাসরি সেই মাধ্যমের
+ * পাতায় যান (`generate-direct-page`)। গেটওয়ে শুধু `DIRECT_PROVIDERS` এ এটা
+ * দেয়; Bank/Crypto আগের মতো সাধারণ পাতায় যায়।
+ *
  * BetChokkor থেকে যা আলাদা:
  *   - webhook এর ঠিকানায় প্রতিটা লেনদেনের নিজের গোপন চাবি — নকল webhook
  *     দিয়ে টাকা ঢোকানো যায় না (গেটওয়ে কোনো সই পাঠায় না)
@@ -38,6 +42,9 @@ const router = express.Router();
 const text = (value) => String(value ?? "").trim();
 const isId = (value) => mongoose.Types.ObjectId.isValid(String(value));
 const langText = (input = {}) => ({ bn: text(input?.bn), en: text(input?.en) });
+
+const DIRECT_PROVIDERS = ["bkash", "nagad", "rocket", "upay"];
+const directPageUrl = () => text(process.env.OPAY_URL).replace("generate-payment-page", "generate-direct-page");
 
 /** "100, 300, 500" বা [100, 300] → ছোট থেকে বড় ধনাত্মক অঙ্ক (সর্বোচ্চ ১২টা) */
 export const amountsOf = (value) => {
@@ -156,6 +163,11 @@ router.post("/create", protectUser, async (req, res) => {
       return errorResponse(res, `Maximum deposit amount is ${setting.maxAmount}`, 400, "aboveMax");
     }
 
+    const methodCode = text(req.body?.method).toLowerCase();
+    const method = methodCode ? (setting.methods || []).find((m) => m.code === methodCode && m.active !== false) : null;
+    if (methodCode && !method) return errorResponse(res, "This method is not available", 400, "methodOff");
+    const provider = DIRECT_PROVIDERS.includes(methodCode) ? methodCode : "";
+
     const user = await User.findById(req.user._id);
     if (!user) return errorResponse(res, "User not found", 404);
     if (!user.isActive) return errorResponse(res, "This account is disabled", 403);
@@ -188,6 +200,7 @@ router.post("/create", protectUser, async (req, res) => {
       invoiceNumber,
       callbackKey,
       status: "PENDING",
+      method: methodCode,
       selectedBonus,
       calc: { ...calc, affiliateDepositCommission: commission },
     });
@@ -202,9 +215,10 @@ router.post("/create", protectUser, async (req, res) => {
 
     try {
       const data = await gatewayPost(
-        process.env.OPAY_URL,
+        provider ? directPageUrl() : process.env.OPAY_URL,
         setting.businessToken,
         {
+          ...(provider ? { provider } : {}),
           payment_amount: amount,
           user_identity_address: String(user._id),
           callback_url: `${server}/api/auto-deposit/webhook/${callbackKey}`,
@@ -218,6 +232,12 @@ router.post("/create", protectUser, async (req, res) => {
           },
         },
       );
+
+      // এই মাধ্যমে এখন কোনো এজেন্ট নেই — গেটওয়ে ঠিক আছে, খেলোয়াড় অন্যটা বাছবেন
+      if (data?.status === "inactive") {
+        await AutoDeposit.deleteOne({ invoiceNumber });
+        return errorResponse(res, data.message || "This method is not available right now", 400, "methodOff");
+      }
 
       if (!data?.success || !data?.payment_page_url) {
         await fail(data?.message || "Gateway did not return a page");

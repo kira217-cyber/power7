@@ -8,8 +8,8 @@ import { PRESET_AMOUNTS } from "./useDepositFlow";
 /**
  * অটো ডিপোজিট — ডেস্কটপ মডাল আর মোবাইল পেজের একই যুক্তি।
  *
- * পরিমাণ আর (চাইলে) একটা বোনাস বেছে "পেমেন্ট করুন" → server লেনদেন বসিয়ে
- * গেটওয়ের পেমেন্ট পাতার ঠিকানা দেয় → সেখানে চলে যাওয়া। টাকা ঢোকে
+ * মাধ্যম, পরিমাণ আর (চাইলে) একটা বোনাস বেছে "পেমেন্ট করুন" → server লেনদেন
+ * বসিয়ে গেটওয়ের সেই মাধ্যমের পাতার ঠিকানা দেয় → সেখানে চলে যাওয়া। টাকা ঢোকে
  * গেটওয়ের নিশ্চিতকরণে, তাই এখানে ব্যালেন্সে কিছু যোগ করা হয় না।
  *
  * বোনাসের হিসাব server এর `computeBonus` এর মতোই — শুধু দেখানোর জন্য।
@@ -22,14 +22,14 @@ const num = (v) => {
 const money = (v) => Math.round(num(v) * 100) / 100;
 
 /**
- * `kind`: "auto" = OraclePay (মাধ্যম গেটওয়ের পাতায় বাছা হয়), "mfs" = পার্সোনাল অটো
- * ডিপোজিট / MFSWallet (মাধ্যম এখানেই বাছতে হয় — bKash/Nagad/Rocket/Upay, নিজের সীমাসহ)।
+ * `kind`: "auto" = OraclePay, "mfs" = পার্সোনাল অটো ডিপোজিট / MFSWallet। দুটোতেই
+ * মাধ্যম এখানে বাছতে হয়; সীমা শুধু পার্সোনাল অটোতে মাধ্যমের নিজের, অটোতে পুরো সেটিংয়ের।
  */
 const BASE = { auto: "/api/auto-deposit", mfs: "/api/mfs-deposit" };
 
 export const useAutoDeposit = (kind = "auto") => {
   const base = BASE[kind] || BASE.auto;
-  const needsMethod = kind === "mfs";
+  const isMfs = kind === "mfs";
   const { t, lang } = useLanguage();
   const p = t.payMode;
   const tv = useCallback((v) => (v && typeof v === "object" ? v[lang] || v.bn || v.en || "" : v || ""), [lang]);
@@ -55,10 +55,10 @@ export const useAutoDeposit = (kind = "auto") => {
 
   // মাধ্যম একটাই হলে সেটাই বাছা
   const methods = useMemo(() => status?.methods || [], [status]);
-  const method = methods.find((m) => m.code === methodCode) || (needsMethod && methods.length === 1 ? methods[0] : null);
+  const method = methods.find((m) => m.code === methodCode) || (methods.length === 1 ? methods[0] : null);
   // পার্সোনাল অটোতে মাধ্যমের নিজের সীমা
-  const min = num(needsMethod && method ? method.minAmount : status?.minAmount);
-  const max = num(needsMethod && method ? method.maxAmount : status?.maxAmount);
+  const min = num(isMfs && method ? method.minAmount : status?.minAmount);
+  const max = num(isMfs && method ? method.maxAmount : status?.maxAmount);
   const bonuses = useMemo(() => status?.bonuses || [], [status]);
   const bonus = bonuses.find((b) => b._id === bonusId) || null;
   const presets = PRESET_AMOUNTS.filter((v) => (!min || v >= min) && (!max || v <= max));
@@ -83,7 +83,7 @@ export const useAutoDeposit = (kind = "auto") => {
   const pay = async () => {
     if (busy) return;
     const amt = money(amount);
-    if (needsMethod && !method) return notify.warning(p.err.chooseMethod);
+    if (!method) return notify.warning(p.err.chooseMethod);
     if (!amt) return notify.warning(p.enterAmount);
     if ((min && amt < min) || (max && amt > max)) {
       return notify.warning(p.limitErr.replace("{min}", min.toLocaleString("en-US")).replace("{max}", max.toLocaleString("en-US")));
@@ -92,7 +92,7 @@ export const useAutoDeposit = (kind = "auto") => {
     setBusy(true);
     const done = notify.pending(p.starting);
     try {
-      const { data } = await api.post(`${base}/create`, { amount: amt, bonusId: bonusId || undefined, ...(needsMethod ? { method: method.code } : {}) });
+      const { data } = await api.post(`${base}/create`, { amount: amt, bonusId: bonusId || undefined, method: method.code });
       done();
       const url = data?.data?.paymentUrl;
       if (url) window.location.assign(url);
@@ -106,7 +106,7 @@ export const useAutoDeposit = (kind = "auto") => {
     return undefined;
   };
 
-  return { loading, status, min, max, bonuses, bonus, bonusId, setBonusId, presets, amount, setAmount, preview, busy, pay, tv, needsMethod, methods, method, setMethod: setMethodCode };
+  return { loading, status, min, max, bonuses, bonus, bonusId, setBonusId, presets, amount, setAmount, preview, busy, pay, tv, isMfs, methods, method, setMethod: setMethodCode };
 };
 
 export default useAutoDeposit;

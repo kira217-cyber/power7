@@ -98,6 +98,8 @@ const autoDepositSchema = new Schema(
     },
 
     transactionId: { type: String, default: "", trim: true },
+    /** খেলোয়াড় সাইটে যে মাধ্যম বেছেছেন (bkash / nagad …) */
+    method: { type: String, default: "", trim: true },
     /** কোন মাধ্যমে টাকা এসেছে — গেটওয়ে webhook এর `bank` ফিল্ড
         (bkash / nagad / rocket / upay / bank / crypto) */
     bank: { type: String, default: "", trim: true },

@@ -687,21 +687,21 @@ const AutoDesktop = ({ onChangeMode, kind = "auto" }) => {
   const a = useAutoDeposit(kind);
   const openRecord = useOpenDepositRecord();
   const methods = a.methods;
-  const title = a.needsMethod ? a.tv(a.status?.displayName) || p.mfsDeposit : p.autoDeposit;
+  const title = a.isMfs ? a.tv(a.status?.displayName) || p.mfsDeposit : p.autoDeposit;
 
   return (
     <div className="flex" style={{ width: 1110, height: 620 }}>
       {/* সমর্থিত মাধ্যম — গেটওয়ের পাতায় এর যেকোনোটা বাছা যায় */}
       <div className="hide-scrollbar" style={{ width: 255, height: 620, background: "#f7f7f7", padding: "22px 25px", overflowY: "auto" }}>
-        <div style={{ fontSize: 13, color: "var(--member-muted, #999)", marginBottom: 12 }}>{a.needsMethod ? p.chooseMethod : p.methodsTitle}</div>
+        <div style={{ fontSize: 13, color: "var(--member-muted, #999)", marginBottom: 12 }}>{p.chooseMethod}</div>
         {methods.map((item) => {
-          const picked = a.needsMethod && a.method?.code === item.code;
+          const picked = a.method?.code === item.code;
           return (
             <div
               key={item.code}
-              role={a.needsMethod ? "button" : undefined}
-              tabIndex={a.needsMethod ? 0 : undefined}
-              onClick={a.needsMethod ? () => a.setMethod(item.code) : undefined}
+              role="button"
+              tabIndex={0}
+              onClick={() => a.setMethod(item.code)}
               className="flex items-center"
               style={{
                 width: 205,
@@ -713,7 +713,7 @@ const AutoDesktop = ({ onChangeMode, kind = "auto" }) => {
                 gap: 12,
                 color: picked ? DRED : "var(--member-text, #666)",
                 fontSize: 14,
-                cursor: a.needsMethod ? "pointer" : "default",
+                cursor: "pointer",
                 border: `2px solid ${picked ? DRED : "transparent"}`,
               }}
             >
@@ -722,7 +722,6 @@ const AutoDesktop = ({ onChangeMode, kind = "auto" }) => {
             </div>
           );
         })}
-        {methods.length > 0 && !a.needsMethod && <div style={{ fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>{p.methodsHint}</div>}
       </div>
 
       <div className="flex flex-col" style={{ width: 855, height: 620, background: "var(--member-surface, #fff)" }}>
@@ -749,7 +748,7 @@ const AutoDesktop = ({ onChangeMode, kind = "auto" }) => {
               <div
                 style={{ display: "inline-block", border: "1px solid #f9dacb", borderRadius: 10, background: "#fdeee6", color: DRED, fontSize: 14, lineHeight: "20px", padding: "9px 15px", marginBottom: 20 }}
               >
-                {a.needsMethod ? p.mfsNote : p.autoNote}
+                {a.isMfs ? p.mfsNote : p.autoNote}
               </div>
 
               {a.bonuses.length > 0 && (
@@ -834,7 +833,7 @@ const AutoMobile = ({ kind = "auto" }) => {
   const money = t.money;
   const a = useAutoDeposit(kind);
   const methods = a.methods;
-  const title = a.needsMethod ? a.tv(a.status?.displayName) || p.mfsDeposit : p.autoDeposit;
+  const title = a.isMfs ? a.tv(a.status?.displayName) || p.mfsDeposit : p.autoDeposit;
 
   return (
     <MemberShell title={title} headerIcon="deprecm3">
@@ -845,22 +844,22 @@ const AutoMobile = ({ kind = "auto" }) => {
           <>
             {methods.length > 0 && (
               <>
-                <SectionTitle dot="#f5a623">{a.needsMethod ? p.chooseMethod : p.methodsTitle}</SectionTitle>
+                <SectionTitle dot="#f5a623">{p.chooseMethod}</SectionTitle>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: m(6) }}>
                   {methods.map((item) => (
                     <div
                       key={item.code}
-                      role={a.needsMethod ? "button" : undefined}
-                      tabIndex={a.needsMethod ? 0 : undefined}
-                      onClick={a.needsMethod ? () => a.setMethod(item.code) : undefined}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => a.setMethod(item.code)}
                       className="flex flex-col items-center"
                       style={{
                         height: m(160),
                         padding: m(15),
                         borderRadius: m(10),
-                        border: `${m(2)} solid ${a.needsMethod && a.method?.code === item.code ? RED : "var(--member-line, #e4e4e4)"}`,
+                        border: `${m(2)} solid ${a.method?.code === item.code ? RED : "var(--member-line, #e4e4e4)"}`,
                         background: "var(--member-surface, #fff)",
-                        cursor: a.needsMethod ? "pointer" : "default",
+                        cursor: "pointer",
                       }}
                     >
                       <span className="grid w-full place-items-center" style={{ height: m(70) }}>
@@ -872,11 +871,10 @@ const AutoMobile = ({ kind = "auto" }) => {
                     </div>
                   ))}
                 </div>
-                {!a.needsMethod && <div style={{ marginTop: m(12), fontSize: m(22), color: "var(--member-muted, #999)" }}>{p.methodsHint}</div>}
               </>
             )}
 
-            <div style={{ marginTop: m(20), fontSize: m(26), color: RED, lineHeight: 1.5 }}>{a.needsMethod ? p.mfsNote : p.autoNote}</div>
+            <div style={{ marginTop: m(20), fontSize: m(26), color: RED, lineHeight: 1.5 }}>{a.isMfs ? p.mfsNote : p.autoNote}</div>
 
             {a.bonuses.length > 0 && (
               <>
